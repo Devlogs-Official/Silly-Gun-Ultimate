@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
     <application
-        android:label="silly_gun_ultimate"
+        android:label="Silly Gun Wallpapers"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
