@@ -70,7 +70,7 @@ class _StaticPreviewScreenState
       backgroundColor: Colors.white,
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFF7597),
+        backgroundColor: const Color(0xFFB00020),
         foregroundColor: Colors.white,
 
         elevation: 0,
@@ -198,9 +198,7 @@ class _PreviewCard extends StatelessWidget {
                           child: const Center(
                             child:
                             CircularProgressIndicator(
-                              color: Color(
-                                0xFFFF7597,
-                              ),
+                              color: Color(0xFFB00020),
                             ),
                           ),
                         );
@@ -224,9 +222,7 @@ class _PreviewCard extends StatelessWidget {
 
                               size: 42,
 
-                              color: Color(
-                                0xFFFF7597,
-                              ),
+                              color: Color(0xFFB00020),
                             ),
                           ),
                         );
@@ -294,7 +290,7 @@ class _PreviewCard extends StatelessWidget {
                 openElevation: 0,
 
                 closedColor:
-                const Color(0xFFFF7597),
+                const Color(0xFFB00020),
 
                 openColor: Colors.white,
 

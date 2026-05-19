@@ -50,28 +50,112 @@ class WallpaperApplyService {
       );
     }
   }
+  Future<String> applyStaticWallpaper({
+    required String imageUrl,
+    required String fileName,
+    int location = WallpaperManagerPlus.bothScreens,
+  }) async {
+    if (!Platform.isAndroid) {
+      throw const WallpaperApplyException(
+        'Wallpaper applying is supported on Android only.',
+      );
+    }
+
+    await _requestPermissions();
+
+    final file = await _downloadImage(
+      imageUrl: imageUrl,
+      fileName: fileName,
+    );
+
+    try {
+      await WallpaperManagerPlus()
+          .setWallpaper(file, location);
+
+      return 'Wallpaper applied successfully.';
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Applying static wallpaper failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+
+      throw const WallpaperApplyException(
+        'Could not apply wallpaper.',
+      );
+    }
+  }
 
   Future<void> _requestPermissions() async {
     final notificationStatus = await Permission.notification.request();
     if (notificationStatus.isPermanentlyDenied) {
       await openAppSettings();
     }
-
-    // final storageStatus = await Permission.storage.request();
-    // if (storageStatus.isPermanentlyDenied) {
-    //   await openAppSettings();
-    //   throw const WallpaperApplyException(
-    //     'Storage permission is required to prepare the live wallpaper.',
-    //   );
-    // }
-    //
-    // if (storageStatus.isDenied) {
-    //   throw const WallpaperApplyException(
-    //     'Storage permission was denied.',
-    //   );
-    // }
   }
+  Future<File> _downloadImage({
+    required String imageUrl,
+    required String fileName,
+  }) async {
+    final uri = Uri.tryParse(imageUrl);
 
+    if (uri == null) {
+      throw const WallpaperApplyException(
+        'Invalid wallpaper image URL.',
+      );
+    }
+
+    try {
+      final directory = await getTemporaryDirectory();
+
+      final safeName = fileName.replaceAll(
+        RegExp('[^a-zA-Z0-9_-]'),
+        '_',
+      );
+
+      final file = File(
+        '${directory.path}/$safeName.jpg',
+      );
+
+      if (await file.exists() &&
+          await file.length() > 0) {
+        return file;
+      }
+
+      final response = await _client
+          .get(uri)
+          .timeout(const Duration(seconds: 45));
+
+      if (response.statusCode < 200 ||
+          response.statusCode >= 300) {
+        throw const WallpaperApplyException(
+          'Could not download wallpaper image.',
+        );
+      }
+
+      await file.writeAsBytes(
+        response.bodyBytes,
+        flush: true,
+      );
+
+      return file;
+    } on TimeoutException {
+      throw const WallpaperApplyException(
+        'Image download timed out.',
+      );
+    } on WallpaperApplyException {
+      rethrow;
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Preparing static wallpaper failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+
+      throw const WallpaperApplyException(
+        'Unable to prepare wallpaper.',
+      );
+    }
+  }
   Future<File> _downloadVideo({
     required String videoUrl,
     required String fileName,

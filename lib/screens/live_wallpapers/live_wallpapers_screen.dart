@@ -97,63 +97,55 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        ExitDialog.show(context);
-      },
-      child: Scaffold(
-        backgroundColor:  Colors.white,
-        appBar: AppBar(
-          title: const Text('Live Wallpapers'),
-          centerTitle: true,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          backgroundColor: Color(0xFFFF7597),
-          foregroundColor: Colors.white,
-          titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-        ),
-        body: Consumer2<WallpaperProvider, ConnectivityService>(
-          builder: (context, provider, connectivity, _) {
-            final noData = provider.wallpapers.isEmpty;
-            if (provider.isLoading && noData) return const ShimmerGrid();
+    return Scaffold(
+      backgroundColor:  Colors.white,
+      appBar: AppBar(
+        title: const Text('Live Wallpapers'),
+        centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Color(0xFFB00020),
+        foregroundColor: Colors.white,
+        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+      ),
+      body: Consumer2<WallpaperProvider, ConnectivityService>(
+        builder: (context, provider, connectivity, _) {
+          final noData = provider.wallpapers.isEmpty;
+          if (provider.isLoading && noData) return const ShimmerGrid();
 
-            if (!connectivity.hasInternet && noData) {
-              return NoInternetWidget(
-                onRetry: _fetchInitial,
-                onExit: () => ExitDialog.show(context),
-              );
-            }
-
-            if (provider.errorMessage != null && noData) {
-              return RetryWidget(
-                message: provider.errorMessage!,
-                onRetry: _fetchInitial,
-              );
-            }
-
-            if (!provider.isLoading && noData) {
-              return _EmptyState(onRefresh: _refreshWallpapers);
-            }
-
-            return Column(
-              children: [
-                if (!connectivity.hasInternet)
-                  const _OfflineBanner(),
-                Expanded(
-                  child: _WallpaperGrid(
-                    scrollController: _scrollController,
-                    onRefresh: _refreshWallpapers,
-                  ),
-                ),
-              ],
+          if (!connectivity.hasInternet && noData) {
+            return NoInternetWidget(
+              onRetry: _fetchInitial,
             );
-          },
-        ),
+          }
+
+          if (provider.errorMessage != null && noData) {
+            return RetryWidget(
+              message: provider.errorMessage!,
+              onRetry: _fetchInitial,
+            );
+          }
+
+          if (!provider.isLoading && noData) {
+            return _EmptyState(onRefresh: _refreshWallpapers);
+          }
+
+          return Column(
+            children: [
+              if (!connectivity.hasInternet)
+                const _OfflineBanner(),
+              Expanded(
+                child: _WallpaperGrid(
+                  scrollController: _scrollController,
+                  onRefresh: _refreshWallpapers,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

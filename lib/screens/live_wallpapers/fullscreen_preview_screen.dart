@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:io';
+import '../../core/app_constants.dart';
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
 import '../../services/wallpaper_apply_service.dart';
@@ -76,7 +77,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
 
       await Share.shareXFiles(
         [XFile(tempFile.path, mimeType: 'video/mp4')],
-        text: 'Check out this Silly Gun live wallpaper!',
+        text: AppConstants.shareMessage,
       );
     } catch (error, stackTrace) {
       AppLogger.error('Share failed', error: error, stackTrace: stackTrace);

@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
-import 'package:video_player/video_player.dart';
+import 'package:silly_gun_ultimate/core/app_constants.dart';
+import 'package:wallpaper_manager_plus/wallpaper_manager_plus.dart';
 import 'dart:io';
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
@@ -27,9 +29,7 @@ class StaticFullScreenPreview extends StatefulWidget {
 }
 
 class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
-  late final VideoPlayerController _controller;
   final WallpaperApplyService _applyService = WallpaperApplyService();
-  bool _ready = false;
   bool _isApplying = false;
   bool _isSharing = false;
 
@@ -37,24 +37,8 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.wallpaper.imageUrl),
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-    );
-    _initialize();
   }
 
-  Future<void> _initialize() async {
-    try {
-      await _controller.setLooping(true);
-      await _controller.setVolume(0);
-      await _controller.initialize();
-      await _controller.play();
-      if (mounted) setState(() => _ready = true);
-    } catch (_) {
-      if (mounted) setState(() => _ready = false);
-    }
-  }
 
   Future<void> _shareWallpaper() async {
     if (_isSharing) return;
@@ -68,15 +52,15 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       }
 
       final tempDir = await getTemporaryDirectory();
-      final fileName = '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.mp4';
+      final fileName = '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.jpg';
       final tempFile = File('${tempDir.path}/$fileName');
       await tempFile.writeAsBytes(response.bodyBytes);
 
       if (!mounted) return;
 
       await Share.shareXFiles(
-        [XFile(tempFile.path, mimeType: 'video/mp4')],
-        text: 'Check out this Silly Gun live wallpaper!',
+        [XFile(tempFile.path, mimeType: 'image/jpeg')],
+        text: AppConstants.shareMessage,
       );
     } catch (error, stackTrace) {
       AppLogger.error('Share failed', error: error, stackTrace: stackTrace);
@@ -88,7 +72,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   }
 
 
-  Future<void> _applyWallpaper() async {
+  Future<void> _applyWallpaper(int location) async {
     if (_isApplying) return;
 
     setState(() => _isApplying = true);
@@ -108,15 +92,16 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       final tempDir = await getTemporaryDirectory();
 
       final file = File(
-        '${tempDir.path}/${widget.wallpaper.name}.mp4',
+        '${tempDir.path}/${widget.wallpaper.name}.jpg',
       );
 
       await file.writeAsBytes(response.bodyBytes);
 
       // Apply LOCAL FILE
-      final message = await _applyService.applyLiveWallpaper(
-        videoUrl: file.path,
+      final message = await _applyService.applyStaticWallpaper(
+        imageUrl: widget.wallpaper.imageUrl,
         fileName: widget.wallpaper.name,
+        location: location
       );
 
       if (!mounted) return;
@@ -136,12 +121,60 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       Navigator.of(context, rootNavigator: true).pop();
 
       AppSnackbar.error(
-        'Unable to apply live wallpaper.',
+        'Unable to apply wallpaper.',
       );
     } finally {
       if (mounted) {
         setState(() => _isApplying = false);
       }
+    }
+  }
+  Future<void> _showWallpaperOptions() async {
+    final result = await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.home),
+                title: const Text('Home Screen'),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    WallpaperManagerPlus.homeScreen,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.lock),
+                title: const Text('Lock Screen'),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    WallpaperManagerPlus.lockScreen,
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.phone_android),
+                title: const Text('Both Screens'),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    WallpaperManagerPlus.bothScreens,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (result != null) {
+      _applyWallpaper(result);
     }
   }
   void _showApplyingDialog() {
@@ -174,7 +207,6 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   void dispose() {
     _applyService.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _controller.dispose();
     super.dispose();
   }
 
@@ -186,17 +218,24 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (_ready)
-              FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
-                ),
-              )
-            else
+            CachedNetworkImage(
+              imageUrl: widget.wallpaper.imageUrl,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+
+              placeholder: (context, url) =>
               const VideoLoader(borderRadius: 0),
+
+              errorWidget: (context, url, error) =>
+              const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  color: Colors.white,
+                  size: 40,
+                ),
+              ),
+            ),
             Positioned(
               top: MediaQuery.paddingOf(context).top + 10,
               left: 14,
@@ -216,7 +255,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
         onShare: (){
           _isSharing ? null : _shareWallpaper();
         },
-        onApply: _applyWallpaper,
+        onApply: _showWallpaperOptions,
       ),
     );
   }

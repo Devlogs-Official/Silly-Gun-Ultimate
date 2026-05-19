@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:silly_gun_ultimate/widgets/app_colors.dart';
 
 class ExitDialog {
   const ExitDialog._();
@@ -67,6 +68,9 @@ class ExitDialog {
                       const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.primary
+                          ),
                           onPressed: () => Navigator.of(context).pop(true),
                           child: const Text('Exit'),
                         ),

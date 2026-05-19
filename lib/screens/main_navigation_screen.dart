@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:silly_gun_ultimate/widgets/app_colors.dart';
 import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 
 import '../providers/wallpaper_provider.dart';
+import 'app_drawer.dart';
 import 'favorites_screen.dart';
 import 'static_wallpapers/home_screen.dart';
 import 'live_wallpapers/live_wallpapers_screen.dart';
@@ -17,11 +19,10 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
-  int _currentIndex = 0;
 
   Future<bool> _handleBackPress() async {
-    if (_currentIndex != 0) {
-      setState(() => _currentIndex = 0);
+    if (_selectedIndex != 0) {
+      setState(() => _selectedIndex = 0);
       return false;
     }
 
@@ -60,7 +61,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   List<Widget> get _screens => <Widget>[
-    HomeScreen(onOpenLiveTab: () => setState(() => _currentIndex = 1)),
+    HomeScreen(onOpenLiveTab: () => setState(() => _selectedIndex = 1)),
     const LiveWallpapersScreen(),
     const FavoritesScreen(),
   ];
@@ -84,6 +85,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         _handleBackPress();
       },
       child: Scaffold(
+        drawer: ModernDrawer(),
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 260),
           child: KeyedSubtree(
@@ -92,7 +94,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ),
         ),
         bottomNavigationBar: StylishBottomBar(
-          backgroundColor: const Color(0xFFFF7597),
+          backgroundColor: const Color(0xFFB00020),
           option: AnimatedBarOptions(
             barAnimation: BarAnimation.fade,
             iconStyle: IconStyle.Default,
@@ -167,17 +169,16 @@ class _ExitAppDialog extends StatelessWidget {
                     color: const Color(0xFFF0F4FF),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child:  Icon(
                     Icons.power_settings_new_rounded,
-                    color: Color(0xFF2D3C59),
+                    color: AppColors.primary,
                     size: 28,
                   ),
                 ),
                 const SizedBox(height: 14),
                 const Text(
-                  'Exit Eid Wallpapers?',
+                  'Exit Silly Wallpapers?',
                   style: TextStyle(
-                    fontFamily: 'Chillax',
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF151A24),
@@ -185,10 +186,9 @@ class _ExitAppDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Are you sure you want to close the app right now?',
+                  'Are you sure you want to close app right now?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'Chillax',
                     fontSize: 14,
                     color: Color(0xFF657089),
                   ),
@@ -209,9 +209,8 @@ class _ExitAppDialog extends StatelessWidget {
                         child: const Text(
                           'Stay',
                           style: TextStyle(
-                            fontFamily: 'Chillax',
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF2D3C59),
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -221,7 +220,7 @@ class _ExitAppDialog extends StatelessWidget {
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF2D3C59),
+                          backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),

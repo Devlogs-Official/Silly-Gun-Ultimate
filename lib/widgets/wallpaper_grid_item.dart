@@ -95,7 +95,7 @@ class WallpaperGridItem extends StatelessWidget {
                     ),
                   ),
 
-                  if (showTypeBadge)
+                  if (showTypeBadge && wallpaper.isLive)
                     Positioned(
                       left: 12,
                       right: 12,
@@ -134,10 +134,9 @@ class WallpaperGridItem extends StatelessWidget {
                                   size: 17,
                                 ),
                                 const SizedBox(width: 6),
+                                if(wallpaper.isLive)
                                 Text(
-                                  wallpaper.isLive
-                                      ? 'Live'
-                                      : '',
+                                  'Live',
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelSmall

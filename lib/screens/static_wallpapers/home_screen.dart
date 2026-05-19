@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
+import 'package:silly_gun_ultimate/screens/app_drawer.dart';
 import 'package:silly_gun_ultimate/screens/static_wallpapers/static_preview_screen.dart';
 import '../../models/wallpaper_model.dart';
 import '../../providers/favorites_provider.dart';
@@ -12,7 +13,6 @@ import '../../widgets/retry_widget.dart';
 import '../../widgets/shimmer_grid.dart';
 import '../../widgets/wallpaper_grid_item.dart';
 import 'live_wallpaper_card.dart';
-import 'static_wallpaper_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.onOpenLiveTab});
@@ -127,15 +127,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      drawer: ModernDrawer(),
       appBar: AppBar(
         title: const Text(
-          'Static Wallpapers',
+          'Silly Smile Wallpapers',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         elevation: 0,
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: const Icon(Icons.menu_rounded),
+            );
+          },
+        ),
         scrolledUnderElevation: 0,
-        backgroundColor: const Color(0xFFFF7597),
+        backgroundColor: const Color(0xFFB00020),
         foregroundColor: Colors.white,
       ),
       body: SafeArea(
@@ -166,7 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             return RefreshIndicator.adaptive(
-              color: const Color(0xFFFF7597),
+              color: Color(0xFFB00020),
+              backgroundColor: Colors.white,
               onRefresh: _refreshWallpapers,
               child: CustomScrollView(
                 controller: _scrollController,

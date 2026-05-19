@@ -118,29 +118,7 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
     }
 
 
-  // void _preloadNearby(int index) {
-  //   final keep = {index - 1, index, index + 1};
-  //   final disposeIndexes = _controllers.keys
-  //       .where((controllerIndex) => !keep.contains(controllerIndex))
-  //       .toList();
-  //   for (final disposeIndex in disposeIndexes) {
-  //     _controllers.remove(disposeIndex)?.dispose();
-  //   }
-  //
-  //   for (final nearbyIndex in [index - 1, index + 1]) {
-  //     if (nearbyIndex >= 0 && nearbyIndex < widget.wallpapers.length) {
-  //       precacheImage(
-  //         CachedNetworkImageProvider(
-  //           widget.wallpapers[nearbyIndex].thumbnailUrl,
-  //         ),
-  //         context,
-  //       );
-  //       _initializeVideo(nearbyIndex, play: false);
-  //     }
-  //   }
-  // }
   void _preloadNearby(int index) {
-    // Dispose controllers that are too far away
     final keep = {index - 1, index, index + 1};
     final disposeIndexes = _controllers.keys
         .where((i) => !keep.contains(i))
@@ -149,7 +127,6 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
       _controllers.remove(i)?.dispose();
     }
 
-    // Only precache thumbnails — don't pre-initialize video codecs
     for (final nearbyIndex in [index - 1, index + 1]) {
       if (nearbyIndex >= 0 && nearbyIndex < widget.wallpapers.length) {
         precacheImage(
@@ -158,7 +135,6 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
           ),
           context,
         );
-        // Removed: _initializeVideo(nearbyIndex, play: false)
       }
     }
   }
@@ -172,14 +148,6 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
     );
   }
 
-  // Future<void> _onPageChanged(int index) async {
-  //   _controllers[_selectedIndex]?.pause();
-  //   if (!mounted) return;
-  //   setState(() => _selectedIndex = index);
-  //   await _initializeVideo(index, play: true);
-  //   if (!mounted) return;
-  //   _preloadNearby(index);
-  // }
 
   Future<void> _retryVideo(int index) async {
     _controllers.remove(index)?.dispose();
@@ -230,14 +198,10 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      // onPopInvokedWithResult: (didPop, result) {
-      //   if (didPop) return;
-      //   ExitDialog.show(context);
-      // },
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.black,
+          backgroundColor: Color(0xFFB00020),
           foregroundColor: Colors.white,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
@@ -327,7 +291,6 @@ class _PreviewCard extends StatelessWidget {
         color: Colors.transparent,
         child: Column(
           children: [
-            // ── Video / thumbnail card ──────────────────────────────
             Expanded(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(34),
@@ -408,7 +371,7 @@ class _PreviewCard extends StatelessWidget {
                 transitionDuration: const Duration(milliseconds: 460),
                 closedElevation: 0,
                 openElevation: 0,
-                closedColor: Colors.black,
+                closedColor: Color(0xFFB00020),
                 openColor: Colors.white,
                 onClosed: (_) => onExpandClosed(),
                 closedShape: RoundedRectangleBorder(

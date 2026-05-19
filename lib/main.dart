@@ -89,12 +89,12 @@ class SillyGunWallpapersApp extends StatelessWidget {
           fontFamily: 'BricolageGrotesque',
           scaffoldBackgroundColor: Colors.white,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFFF7597),
+            seedColor: const Color(0xFFB00020),
             brightness: Brightness.light,
           ),
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
-            foregroundColor: const Color(0xFFFF7597),
+            foregroundColor: Color(0xFFB00020),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
@@ -107,7 +107,7 @@ class SillyGunWallpapersApp extends StatelessWidget {
           ),
           filledButtonTheme: FilledButtonThemeData(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFF7597),
+              backgroundColor: const Color(0xFFB00020),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),

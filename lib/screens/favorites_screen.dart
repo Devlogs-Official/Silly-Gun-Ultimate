@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
+import 'package:silly_gun_ultimate/screens/static_wallpapers/static_preview_screen.dart';
 
 import '../models/wallpaper_model.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/wallpaper_grid_item.dart';
 import 'live_wallpapers/wallpaper_preview_screen.dart';
-import 'static_wallpapers/static_wallpaper_detail_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -15,23 +15,26 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<FavoritesProvider>().favorites;
-    final staticFavorites =
-        favorites.where((item) => !item.isLive).toList(growable: false);
-    final liveFavorites =
-        favorites.where((item) => item.isLive).toList(growable: false);
+    final staticFavorites = favorites
+        .where((item) => !item.isLive)
+        .toList(growable: false);
+    final liveFavorites = favorites
+        .where((item) => item.isLive)
+        .toList(growable: false);
 
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color cardColor = isDark ? const Color(0xFF1B1F27) : Colors.white;
-    final Color borderColor =
-    isDark ? const Color(0xFF272C36) : AppColors.border;
-    final Color titleColor = theme.colorScheme.onSurface;
-    final Color tabIndicatorColor =
-    isDark
+    final Color borderColor = isDark
+        ? const Color(0xFF272C36)
+        : AppColors.border;
+    final Color titleColor = Colors.white;
+    final Color tabIndicatorColor = isDark
         ? const Color(0xFF2A3550)
         : AppColors.primary;
-    final Color tabUnselected =
-    isDark ? const Color(0xFF8A93A6) : AppColors.textSecondary;
+    final Color tabUnselected = isDark
+        ? const Color(0xFF8A93A6)
+        : AppColors.textSecondary;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -48,7 +51,10 @@ class FavoritesScreen extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(16),
@@ -65,7 +71,10 @@ class FavoritesScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: <Widget>[
-                      const Icon(Icons.favorite_rounded, color: Color(0xFFE15B77)),
+                      const Icon(
+                        Icons.favorite_rounded,
+                        color: Color(0xFFE15B77),
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${staticFavorites.length + liveFavorites.length} saved wallpapers',
@@ -127,7 +136,6 @@ class FavoritesScreen extends StatelessWidget {
   }
 }
 
-
 class _FavoritesGrid extends StatelessWidget {
   const _FavoritesGrid({required this.items});
 
@@ -135,8 +143,8 @@ class _FavoritesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FavoritesProvider favoritesProvider =
-    context.watch<FavoritesProvider>();
+    final FavoritesProvider favoritesProvider = context
+        .watch<FavoritesProvider>();
     if (items.isEmpty) {
       return const Center(
         child: Text(
@@ -175,24 +183,28 @@ class _FavoritesGrid extends StatelessWidget {
                 ),
               );
               return;
+            } else {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => StaticPreviewScreen(
+                    wallpaper: wallpaper,
+                    wallpapers: items,
+                    initialIndex: index,
+                  ),
+                ),
+              );
             }
             // Navigator.of(context).push(
-              // MaterialPageRoute<void>(
-              //   builder: (_) => StaticWallpaperDetailScreen(
-              //     wallpaper: wallpaper,
-              //   ),
-              // ),
+            // MaterialPageRoute<void>(
+            //   builder: (_) => StaticWallpaperDetailScreen(
+            //     wallpaper: wallpaper,
+            //   ),
+            // ),
             // );
           },
-          isFavorite: favoritesProvider
-              .isFavorite(
-            wallpaper,
-          ),
+          isFavorite: favoritesProvider.isFavorite(wallpaper),
           onFavoriteToggle: () {
-            favoritesProvider
-                .toggleFavorite(
-              wallpaper,
-            );
+            favoritesProvider.toggleFavorite(wallpaper);
           },
         );
       },
