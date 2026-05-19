@@ -53,8 +53,6 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
     });
   }
 
-
-
   @override
   void initState() {
     super.initState();
@@ -102,7 +100,11 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
       if (play && !_routePaused) await controller.play();
       if (mounted) setState(() {});
     } catch (error, stackTrace) {
-      AppLogger.error('Video initialization failed', error: error, stackTrace: stackTrace);
+      AppLogger.error(
+        'Video initialization failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       _controllers.remove(index);
       await controller.dispose();
 
@@ -115,8 +117,7 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
       }
       if (mounted) setState(() {});
     }
-    }
-
+  }
 
   void _preloadNearby(int index) {
     final keep = {index - 1, index, index + 1};
@@ -138,6 +139,7 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
       }
     }
   }
+
   Future<void> _selectWallpaper(int index) async {
     if (index == _selectedIndex) return;
     if (!mounted) return;
@@ -147,7 +149,6 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
       curve: Curves.easeOutCubic,
     );
   }
-
 
   Future<void> _retryVideo(int index) async {
     _controllers.remove(index)?.dispose();
@@ -207,14 +208,7 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
           ),
-          title: const Text(
-            'Live Wallpapers',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0,
-            ),
-          ),
+          title: const Text('Live Wallpapers'),
         ),
         body: SafeArea(
           child: Column(
@@ -300,29 +294,33 @@ class _PreviewCard extends StatelessWidget {
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 280),
                       child: ready
-                          ? FittedBox(
-                        key: const ValueKey('video'),
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: controller!.value.size.width,
-                          height: controller!.value.size.height,
-                          child: VideoPlayer(controller!),
-                        ),
-                      )
+                          ? SizedBox(
+                              key: const ValueKey('video'),
+                              child: FittedBox(
+                                // key: const ValueKey('video'),
+                                clipBehavior: Clip.hardEdge,
+                                fit: BoxFit.cover,
+                                child: SizedBox(
+                                  width: controller!.value.size.width,
+                                  height: controller!.value.size.height,
+                                  child: VideoPlayer(controller!),
+                                ),
+                              ),
+                            )
                           : SizedBox.expand(
-                        key: const ValueKey('thumb'),
-                        child: CachedNetworkImage(
-                          imageUrl: wallpaper.thumbnailUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                          const VideoLoader(),
-                          errorWidget: (context, url, error) =>
-                          const ColoredBox(
-                            color: Colors.black,
-                            child: Icon(Icons.broken_image_outlined),
-                          ),
-                        ),
-                      ),
+                              key: const ValueKey('thumb'),
+                              child: CachedNetworkImage(
+                                imageUrl: wallpaper.thumbnailUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    const VideoLoader(),
+                                errorWidget: (context, url, error) =>
+                                    const ColoredBox(
+                                      color: Colors.black,
+                                      child: Icon(Icons.broken_image_outlined),
+                                    ),
+                              ),
+                            ),
                     ),
                     if (hasError)
                       Positioned.fill(
@@ -375,11 +373,10 @@ class _PreviewCard extends StatelessWidget {
                 openColor: Colors.white,
                 onClosed: (_) => onExpandClosed(),
                 closedShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(34),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                openBuilder: (context, action) => FullscreenPreviewScreen(
-                  wallpaper: wallpaper,
-                ),
+                openBuilder: (context, action) =>
+                    FullscreenPreviewScreen(wallpaper: wallpaper),
                 closedBuilder: (_, openContainer) {
                   return InkWell(
                     onTap: () {
@@ -388,17 +385,17 @@ class _PreviewCard extends StatelessWidget {
                     },
                     borderRadius: BorderRadius.circular(34),
                     child: const SizedBox(
-                      height: 58,
+                      height: 55,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.fullscreen_rounded, color: Colors.white),
-                          SizedBox(width: 12),
+                          SizedBox(width: 8),
                           Text(
                             'Expand',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 17,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0,
                             ),

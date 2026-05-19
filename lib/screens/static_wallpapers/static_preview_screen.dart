@@ -85,10 +85,6 @@ class _StaticPreviewScreenState
 
         title: const Text(
           'Static Wallpapers',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-          ),
         ),
       ),
 
@@ -297,7 +293,7 @@ class _PreviewCard extends StatelessWidget {
                 closedShape:
                 RoundedRectangleBorder(
                   borderRadius:
-                  BorderRadius.circular(34),
+                  BorderRadius.circular(20),
                 ),
 
                 openBuilder:
@@ -317,7 +313,7 @@ class _PreviewCard extends StatelessWidget {
                     ),
 
                     child: const SizedBox(
-                      height: 58,
+                      height: 55,
 
                       child: Row(
                         mainAxisAlignment:
@@ -332,16 +328,14 @@ class _PreviewCard extends StatelessWidget {
                             color: Colors.white,
                           ),
 
-                          SizedBox(width: 12),
+                          SizedBox(width: 8),
 
                           Text(
                             'Expand',
 
                             style: TextStyle(
                               color: Colors.white,
-
-                              fontSize: 20,
-
+                              fontSize: 17,
                               fontWeight:
                               FontWeight.w900,
                             ),

@@ -46,17 +46,26 @@ flutter:
     - assets/fonts/
     - assets/splash/
   fonts:
-    - family: BricolageGrotesque
+    - family: NotoSerif
       fonts:
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-Light.ttf
+        - asset: assets/fonts/NotoSerif/NotoSerif-Thin.ttf
+          weight: 100
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-ExtraLight.ttf
+          weight: 200
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-Light.ttf
           weight: 300
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-Medium.ttf
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-Medium.ttf
           weight: 500
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-Bold.ttf
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-Bold.ttf
           weight: 700
-        - asset: assets/fonts/BricolageGrotesque/BricolageGrotesque-ExtraBold.ttf
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-ExtraBold.ttf
           weight: 800
+
+        - asset: assets/fonts/NotoSerif/NotoSerif-BoldItalic.ttf
+          weight: 700
+          style: italic

@@ -148,16 +148,15 @@ class _LiveWallpaperCardState extends State<LiveWallpaperCard>
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Icon(
-                                Icons.play_circle_fill_rounded,
+                                Icons.live_tv_sharp,
                                 color: Colors.white,
                                 size: 18,
                               ),
                               SizedBox(width: 6),
                               Text(
-                                'Live Eid Wallpapers',
+                                'Explore Live Wallpapers',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontFamily: 'Chillax',
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
                                 ),

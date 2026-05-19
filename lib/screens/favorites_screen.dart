@@ -46,47 +46,7 @@ class FavoritesScreen extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: <Widget>[
-              // const
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: borderColor),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: isDark
-                            ? const Color(0x33000000)
-                            : const Color(0x14000000),
-                        blurRadius: 14,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      const Icon(
-                        Icons.favorite_rounded,
-                        color: Color(0xFFE15B77),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${staticFavorites.length + liveFavorites.length} saved wallpapers',
-                        style: TextStyle(
-                          color: titleColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(height: 8,),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(4),

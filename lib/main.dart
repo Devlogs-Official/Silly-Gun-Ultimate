@@ -86,7 +86,7 @@ class SillyGunWallpapersApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           brightness: Brightness.light,
-          fontFamily: 'BricolageGrotesque',
+          fontFamily: 'NotoSerif',
           scaffoldBackgroundColor: Colors.white,
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFFB00020),
