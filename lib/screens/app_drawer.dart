@@ -53,11 +53,7 @@ class ModernDrawer extends StatelessWidget {
                       color: Colors.white.withOpacity(0.2),
                     ),
                   ),
-                  child: const Icon(
-                    Icons.wallpaper_rounded,
-                    color: Colors.white,
-                    size: 34,
-                  ),
+                  child: Image.asset("assets/utils/icon.png"),
                 ),
 
                 const SizedBox(width: 18),

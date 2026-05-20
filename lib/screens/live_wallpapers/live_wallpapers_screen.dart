@@ -106,10 +106,6 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
         scrolledUnderElevation: 0,
         backgroundColor: Color(0xFFB00020),
         foregroundColor: Colors.white,
-        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-            ),
       ),
       body: Consumer2<WallpaperProvider, ConnectivityService>(
         builder: (context, provider, connectivity, _) {
