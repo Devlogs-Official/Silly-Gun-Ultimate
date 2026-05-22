@@ -107,7 +107,9 @@ class WallpaperGridItem extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Icon(
-                                  wallpaper.isLive ? Icons.live_tv : null,
+                                  wallpaper.isLive
+                                      ? Icons.play_circle_fill_rounded
+                                      : null,
                                   color: Colors.white,
                                   size: 17,
                                 ),
