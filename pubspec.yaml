@@ -1,6 +1,6 @@
 name: silly_gun_ultimate
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -49,12 +49,6 @@ flutter:
   fonts:
     - family: NotoSerif
       fonts:
-        - asset: assets/fonts/NotoSerif/NotoSerif-Thin.ttf
-          weight: 100
-
-        - asset: assets/fonts/NotoSerif/NotoSerif-ExtraLight.ttf
-          weight: 200
-
         - asset: assets/fonts/NotoSerif/NotoSerif-Light.ttf
           weight: 300
 
@@ -66,7 +60,3 @@ flutter:
 
         - asset: assets/fonts/NotoSerif/NotoSerif-ExtraBold.ttf
           weight: 800
-
-        - asset: assets/fonts/NotoSerif/NotoSerif-BoldItalic.ttf
-          weight: 700
-          style: italic
