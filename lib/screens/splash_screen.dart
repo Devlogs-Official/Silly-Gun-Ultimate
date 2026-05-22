@@ -239,9 +239,6 @@ import 'package:flutter/material.dart';
 import 'package:silly_gun_ultimate/screens/main_navigation_screen.dart';
 import 'package:video_player/video_player.dart';
 
-import 'live_wallpapers/live_wallpapers_screen.dart';
-
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -262,18 +259,17 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _controller = VideoPlayerController.asset(
-      'assets/splash/splash.mp4',
-    )..initialize().then((_) {
-      if (!mounted) return;
+    _controller = VideoPlayerController.asset('assets/splash/splash.mp4')
+      ..initialize().then((_) {
+        if (!mounted) return;
 
-      setState(() {});
+        setState(() {});
 
-      _controller
-        ..setLooping(true)
-        ..setVolume(0)
-        ..play();
-    });
+        _controller
+          ..setLooping(true)
+          ..setVolume(0)
+          ..play();
+      });
 
     _animationController = AnimationController(
       vsync: this,
@@ -287,19 +283,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    _navigationTimer = Timer(
-      const Duration(seconds: 5),
-          () {
-        if (!mounted) return;
+    _navigationTimer = Timer(const Duration(seconds: 5), () {
+      if (!mounted) return;
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const MainNavigationScreen(),
-          ),
-        );
-      },
-    );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+      );
+    });
   }
 
   @override
@@ -317,7 +308,6 @@ class _SplashScreenState extends State<SplashScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-
           /// VIDEO BACKGROUND
           if (_controller.value.isInitialized)
             FittedBox(
@@ -354,7 +344,6 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-
                     const Spacer(),
 
                     /// APP NAME

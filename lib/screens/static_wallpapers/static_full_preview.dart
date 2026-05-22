@@ -1,12 +1,14 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:silly_gun_ultimate/core/app_constants.dart';
 import 'package:wallpaper_manager_plus/wallpaper_manager_plus.dart';
-import 'dart:io';
+
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
 import '../../services/wallpaper_apply_service.dart';
@@ -14,12 +16,8 @@ import '../../widgets/app_snackbar.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import '../../widgets/video_loader.dart';
 
-
 class StaticFullScreenPreview extends StatefulWidget {
-  const StaticFullScreenPreview({
-    super.key,
-    required this.wallpaper,
-  });
+  const StaticFullScreenPreview({super.key, required this.wallpaper});
 
   final WallpaperModel wallpaper;
 
@@ -39,7 +37,6 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   }
 
-
   Future<void> _shareWallpaper() async {
     if (_isSharing) return;
     setState(() => _isSharing = true);
@@ -52,15 +49,18 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       }
 
       final tempDir = await getTemporaryDirectory();
-      final fileName = '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.jpg';
+      final fileName =
+          '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.jpg';
       final tempFile = File('${tempDir.path}/$fileName');
       await tempFile.writeAsBytes(response.bodyBytes);
 
       if (!mounted) return;
 
-      await Share.shareXFiles(
-        [XFile(tempFile.path, mimeType: 'image/jpeg')],
-        text: AppConstants.shareMessage,
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(tempFile.path, mimeType: 'image/jpeg')],
+          text: AppConstants.shareMessage,
+        ),
       );
     } catch (error, stackTrace) {
       AppLogger.error('Share failed', error: error, stackTrace: stackTrace);
@@ -71,7 +71,6 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
     }
   }
 
-
   Future<void> _applyWallpaper(int location) async {
     if (_isApplying) return;
 
@@ -79,29 +78,10 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
     _showApplyingDialog();
 
     try {
-      // Download video first
-      final response = await http.get(
-        Uri.parse(widget.wallpaper.imageUrl),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to download wallpaper');
-      }
-
-      // Save temporary file
-      final tempDir = await getTemporaryDirectory();
-
-      final file = File(
-        '${tempDir.path}/${widget.wallpaper.name}.jpg',
-      );
-
-      await file.writeAsBytes(response.bodyBytes);
-
-      // Apply LOCAL FILE
       final message = await _applyService.applyStaticWallpaper(
         imageUrl: widget.wallpaper.imageUrl,
         fileName: widget.wallpaper.name,
-        location: location
+        location: location,
       );
 
       if (!mounted) return;
@@ -121,7 +101,9 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       Navigator.of(context, rootNavigator: true).pop();
 
       AppSnackbar.error(
-        'Unable to apply wallpaper.',
+        error is WallpaperApplyException
+            ? error.message
+            : 'Unable to apply wallpaper.',
       );
     } finally {
       if (mounted) {
@@ -129,6 +111,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       }
     }
   }
+
   Future<void> _showWallpaperOptions() async {
     final result = await showModalBottomSheet<int>(
       context: context,
@@ -141,30 +124,21 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
                 leading: const Icon(Icons.home),
                 title: const Text('Home Screen'),
                 onTap: () {
-                  Navigator.pop(
-                    context,
-                    WallpaperManagerPlus.homeScreen,
-                  );
+                  Navigator.pop(context, WallpaperManagerPlus.homeScreen);
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.lock),
                 title: const Text('Lock Screen'),
                 onTap: () {
-                  Navigator.pop(
-                    context,
-                    WallpaperManagerPlus.lockScreen,
-                  );
+                  Navigator.pop(context, WallpaperManagerPlus.lockScreen);
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.phone_android),
                 title: const Text('Both Screens'),
                 onTap: () {
-                  Navigator.pop(
-                    context,
-                    WallpaperManagerPlus.bothScreens,
-                  );
+                  Navigator.pop(context, WallpaperManagerPlus.bothScreens);
                 },
               ),
             ],
@@ -177,6 +151,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       _applyWallpaper(result);
     }
   }
+
   void _showApplyingDialog() {
     showDialog<void>(
       context: context,
@@ -224,16 +199,10 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
               width: double.infinity,
               height: double.infinity,
 
-              placeholder: (context, url) =>
-              const VideoLoader(borderRadius: 0),
+              placeholder: (context, url) => const VideoLoader(borderRadius: 0),
 
-              errorWidget: (context, url, error) =>
-              const Center(
-                child: Icon(
-                  Icons.broken_image,
-                  color: Colors.white,
-                  size: 40,
-                ),
+              errorWidget: (context, url, error) => const Center(
+                child: Icon(Icons.broken_image, color: Colors.white, size: 40),
               ),
             ),
             Positioned(
@@ -252,8 +221,10 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
       ),
       bottomNavigationBar: BottomActionButtons(
         isApplying: _isApplying,
-        onShare: (){
-          _isSharing ? null : _shareWallpaper();
+        onShare: () {
+          if (!_isSharing) {
+            _shareWallpaper();
+          }
         },
         onApply: _showWallpaperOptions,
       ),

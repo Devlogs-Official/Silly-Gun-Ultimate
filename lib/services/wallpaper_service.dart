@@ -52,15 +52,17 @@ class WallpaperService {
     try {
       final response = await _client.get(uri).timeout(_timeout);
 
-      if (response.body.trim().isEmpty) {
-        throw const ApiException('The server returned an empty response.');
-      }
-
       if (response.statusCode < 200 || response.statusCode >= 300) {
+        final serverMessage = _messageFromBody(response.body);
         throw ApiException(
-          'Server error ${response.statusCode}. Please try again.',
+          serverMessage ??
+              'Server error ${response.statusCode}. Please try again.',
           debugMessage: response.body,
         );
+      }
+
+      if (response.body.trim().isEmpty) {
+        throw const ApiException('The server returned an empty response.');
       }
 
       final decoded = jsonDecode(response.body);
@@ -68,7 +70,7 @@ class WallpaperService {
         throw const ApiException('Invalid server response.');
       }
 
-      if (decoded['status'] != true) {
+      if (!_isSuccessStatus(decoded['status'])) {
         throw ApiException(
           (decoded['message'] as String?)?.trim().isNotEmpty == true
               ? decoded['message'] as String
@@ -85,18 +87,28 @@ class WallpaperService {
         );
       }
 
-      if (responseModel.pagination.totalPages <= 0) {
-        throw const ApiException('Incomplete server response.');
-      }
+      final currentPage = responseModel.pagination.currentPage < 1
+          ? page
+          : responseModel.pagination.currentPage;
+      final pageSizeValue = responseModel.pagination.pageSize < 1
+          ? pageSize
+          : responseModel.pagination.pageSize;
+      final totalPages = responseModel.pagination.totalPages < currentPage
+          ? currentPage
+          : responseModel.pagination.totalPages;
 
       return WallpaperPage(
         wallpapers: responseModel.data
-            .where((wallpaper) => wallpaper.thumbnailUrl.isNotEmpty)
+            .where(
+              (wallpaper) =>
+                  wallpaper.thumbnailUrl.isNotEmpty &&
+                  wallpaper.imageUrl.isNotEmpty,
+            )
             .toList(growable: false),
-        currentPage: responseModel.pagination.currentPage,
-        pageSize: responseModel.pagination.pageSize,
+        currentPage: currentPage,
+        pageSize: pageSizeValue,
         totalRecords: responseModel.pagination.totalRecords,
-        totalPages: responseModel.pagination.totalPages,
+        totalPages: totalPages,
       );
     } on TimeoutException {
       throw const NetworkException(
@@ -122,8 +134,33 @@ class WallpaperService {
         error: error,
         stackTrace: stackTrace,
       );
-      throw const ApiException('Something went wrong while loading wallpapers.');
+      throw const ApiException(
+        'Something went wrong while loading wallpapers.',
+      );
     }
+  }
+
+  String? _messageFromBody(String body) {
+    if (body.trim().isEmpty) return null;
+
+    try {
+      final decoded = jsonDecode(body);
+      if (decoded is Map<String, dynamic>) {
+        final message = (decoded['message'] as String?)?.trim();
+        if (message?.isNotEmpty == true) return message;
+      }
+    } catch (_) {
+      return null;
+    }
+
+    return null;
+  }
+
+  bool _isSuccessStatus(Object? value) {
+    if (value is bool) return value;
+    if (value is num) return value.toInt() == 1;
+    final raw = value?.toString().toLowerCase().trim();
+    return raw == '1' || raw == 'true' || raw == 'success';
   }
 
   void dispose() => _client.close();

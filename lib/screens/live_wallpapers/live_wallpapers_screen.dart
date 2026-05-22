@@ -7,7 +7,6 @@ import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
 import '../../widgets/app_snackbar.dart';
-import '../../widgets/exit_dialog.dart';
 import '../../widgets/no_internet_widget.dart';
 import '../../widgets/retry_widget.dart';
 import '../../widgets/shimmer_grid.dart';
@@ -67,7 +66,9 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
 
   Future<void> _fetchMoreWallpapers() async {
     final provider = context.read<WallpaperProvider>();
-    if (provider.isLoading || provider.isLoadingMore || !provider.hasMore) return;
+    if (provider.isLoading || provider.isLoadingMore || !provider.hasMore) {
+      return;
+    }
 
     final connectivity = context.read<ConnectivityService>();
     if (!connectivity.hasInternet && !(await connectivity.refresh())) {
@@ -98,7 +99,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:  Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Live Wallpapers'),
         centerTitle: true,
@@ -113,9 +114,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
           if (provider.isLoading && noData) return const ShimmerGrid();
 
           if (!connectivity.hasInternet && noData) {
-            return NoInternetWidget(
-              onRetry: _fetchInitial,
-            );
+            return NoInternetWidget(onRetry: _fetchInitial);
           }
 
           if (provider.errorMessage != null && noData) {
@@ -131,8 +130,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
 
           return Column(
             children: [
-              if (!connectivity.hasInternet)
-                const _OfflineBanner(),
+              if (!connectivity.hasInternet) const _OfflineBanner(),
               Expanded(
                 child: _WallpaperGrid(
                   scrollController: _scrollController,
@@ -158,8 +156,8 @@ class _WallpaperGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FavoritesProvider favoritesProvider =
-    context.watch<FavoritesProvider>();
+    final FavoritesProvider favoritesProvider = context
+        .watch<FavoritesProvider>();
     return RefreshIndicator.adaptive(
       color: const Color(0xFF8FE3CF),
       backgroundColor: const Color(0xFF161B24),
@@ -199,15 +197,11 @@ class _WallpaperGrid extends StatelessWidget {
                     ),
                   );
                 },
-                isFavorite: favoritesProvider
-                    .isFavorite(
+                isFavorite: favoritesProvider.isFavorite(
                   provider.wallpapers[index],
                 ),
                 onFavoriteToggle: () {
-                  favoritesProvider
-                      .toggleFavorite(
-                    provider.wallpapers[index],
-                  );
+                  favoritesProvider.toggleFavorite(provider.wallpapers[index]);
                 },
               );
             },
@@ -264,9 +258,9 @@ class _EmptyState extends StatelessWidget {
             'No wallpapers found',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -284,9 +278,7 @@ class _OfflineBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: const BoxDecoration(
         color: Color(0xFF151A22),
-        border: Border(
-          bottom: BorderSide(color: Color(0x1FFFFFFF)),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0x1FFFFFFF))),
       ),
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,

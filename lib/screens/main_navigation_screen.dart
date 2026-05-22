@@ -107,14 +107,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           items: [
             BottomBarItem(
               unSelectedColor: Colors.white70,
-              icon: const Icon(Icons.home_outlined),
-              selectedIcon: const Icon(Icons.home_rounded),
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard_rounded),
               title: const Text('Home'),
               selectedColor: Colors.white,
             ),
             BottomBarItem(
-              icon: const Icon(Icons.live_tv),
-              selectedIcon: const Icon(Icons.live_tv),
+              icon: const Icon(Icons.play_circle_outline_rounded),
+              selectedIcon: const Icon(Icons.play_circle_fill_rounded),
               title: const Text('Live'),
               selectedColor: Colors.white,
               unSelectedColor: Colors.white70,

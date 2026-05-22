@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:wallpaper_manager_plus/wallpaper_manager_plus.dart';
 
 import '../core/app_logger.dart';
@@ -19,7 +18,7 @@ class WallpaperApplyException implements Exception {
 
 class WallpaperApplyService {
   WallpaperApplyService({http.Client? client})
-      : _client = client ?? http.Client();
+    : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -33,7 +32,6 @@ class WallpaperApplyService {
       );
     }
 
-    await _requestPermissions();
     final file = await _downloadVideo(videoUrl: videoUrl, fileName: fileName);
 
     try {
@@ -50,6 +48,7 @@ class WallpaperApplyService {
       );
     }
   }
+
   Future<String> applyStaticWallpaper({
     required String imageUrl,
     required String fileName,
@@ -61,16 +60,10 @@ class WallpaperApplyService {
       );
     }
 
-    await _requestPermissions();
-
-    final file = await _downloadImage(
-      imageUrl: imageUrl,
-      fileName: fileName,
-    );
+    final file = await _downloadImage(imageUrl: imageUrl, fileName: fileName);
 
     try {
-      await WallpaperManagerPlus()
-          .setWallpaper(file, location);
+      await WallpaperManagerPlus().setWallpaper(file, location);
 
       return 'Wallpaper applied successfully.';
     } catch (error, stackTrace) {
@@ -80,44 +73,28 @@ class WallpaperApplyService {
         stackTrace: stackTrace,
       );
 
-      throw const WallpaperApplyException(
-        'Could not apply wallpaper.',
-      );
+      throw const WallpaperApplyException('Could not apply wallpaper.');
     }
   }
 
-  Future<void> _requestPermissions() async {
-    final notificationStatus = await Permission.notification.request();
-    if (notificationStatus.isPermanentlyDenied) {
-      await openAppSettings();
-    }
-  }
   Future<File> _downloadImage({
     required String imageUrl,
     required String fileName,
   }) async {
     final uri = Uri.tryParse(imageUrl);
 
-    if (uri == null) {
-      throw const WallpaperApplyException(
-        'Invalid wallpaper image URL.',
-      );
+    if (uri == null || !_isHttpUri(uri)) {
+      throw const WallpaperApplyException('Invalid wallpaper image URL.');
     }
 
     try {
       final directory = await getTemporaryDirectory();
 
-      final safeName = fileName.replaceAll(
-        RegExp('[^a-zA-Z0-9_-]'),
-        '_',
-      );
+      final safeName = fileName.replaceAll(RegExp('[^a-zA-Z0-9_-]'), '_');
 
-      final file = File(
-        '${directory.path}/$safeName.jpg',
-      );
+      final file = File('${directory.path}/$safeName.jpg');
 
-      if (await file.exists() &&
-          await file.length() > 0) {
+      if (await file.exists() && await file.length() > 0) {
         return file;
       }
 
@@ -125,22 +102,24 @@ class WallpaperApplyService {
           .get(uri)
           .timeout(const Duration(seconds: 45));
 
-      if (response.statusCode < 200 ||
-          response.statusCode >= 300) {
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         throw const WallpaperApplyException(
           'Could not download wallpaper image.',
         );
       }
 
-      await file.writeAsBytes(
-        response.bodyBytes,
-        flush: true,
-      );
+      await file.writeAsBytes(response.bodyBytes, flush: true);
 
       return file;
     } on TimeoutException {
+      throw const WallpaperApplyException('Image download timed out.');
+    } on SocketException {
       throw const WallpaperApplyException(
-        'Image download timed out.',
+        'No internet connection. Please try again.',
+      );
+    } on http.ClientException {
+      throw const WallpaperApplyException(
+        'Network error while downloading wallpaper.',
       );
     } on WallpaperApplyException {
       rethrow;
@@ -151,17 +130,16 @@ class WallpaperApplyService {
         stackTrace: stackTrace,
       );
 
-      throw const WallpaperApplyException(
-        'Unable to prepare wallpaper.',
-      );
+      throw const WallpaperApplyException('Unable to prepare wallpaper.');
     }
   }
+
   Future<File> _downloadVideo({
     required String videoUrl,
     required String fileName,
   }) async {
     final uri = Uri.tryParse(videoUrl);
-    if (uri == null) {
+    if (uri == null || !_isHttpUri(uri)) {
       throw const WallpaperApplyException('Invalid wallpaper video URL.');
     }
 
@@ -174,16 +152,27 @@ class WallpaperApplyService {
         return file;
       }
 
-      final response =
-      await _client.get(uri).timeout(const Duration(seconds: 45));
+      final response = await _client
+          .get(uri)
+          .timeout(const Duration(seconds: 45));
       if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw const WallpaperApplyException('Could not download wallpaper video.');
+        throw const WallpaperApplyException(
+          'Could not download wallpaper video.',
+        );
       }
 
       await file.writeAsBytes(response.bodyBytes, flush: true);
       return file;
     } on TimeoutException {
       throw const WallpaperApplyException('Video download timed out.');
+    } on SocketException {
+      throw const WallpaperApplyException(
+        'No internet connection. Please try again.',
+      );
+    } on http.ClientException {
+      throw const WallpaperApplyException(
+        'Network error while downloading wallpaper.',
+      );
     } on WallpaperApplyException {
       rethrow;
     } catch (error, stackTrace) {
@@ -195,6 +184,8 @@ class WallpaperApplyService {
       throw const WallpaperApplyException('Unable to prepare live wallpaper.');
     }
   }
+
+  bool _isHttpUri(Uri uri) => uri.scheme == 'http' || uri.scheme == 'https';
 
   void dispose() => _client.close();
 }

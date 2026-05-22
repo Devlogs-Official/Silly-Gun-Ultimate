@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:io';
+
 import '../../core/app_constants.dart';
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
@@ -13,12 +15,8 @@ import '../../widgets/app_snackbar.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import '../../widgets/video_loader.dart';
 
-
 class FullscreenPreviewScreen extends StatefulWidget {
-  const FullscreenPreviewScreen({
-    super.key,
-    required this.wallpaper,
-  });
+  const FullscreenPreviewScreen({super.key, required this.wallpaper});
 
   final WallpaperModel wallpaper;
 
@@ -69,15 +67,18 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
       }
 
       final tempDir = await getTemporaryDirectory();
-      final fileName = '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.mp4';
+      final fileName =
+          '${widget.wallpaper.name.replaceAll(RegExp(r'[^\w]'), '_')}.mp4';
       final tempFile = File('${tempDir.path}/$fileName');
       await tempFile.writeAsBytes(response.bodyBytes);
 
       if (!mounted) return;
 
-      await Share.shareXFiles(
-        [XFile(tempFile.path, mimeType: 'video/mp4')],
-        text: AppConstants.shareMessage,
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(tempFile.path, mimeType: 'video/mp4')],
+          text: AppConstants.shareMessage,
+        ),
       );
     } catch (error, stackTrace) {
       AppLogger.error('Share failed', error: error, stackTrace: stackTrace);
@@ -88,7 +89,6 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     }
   }
 
-
   Future<void> _applyWallpaper() async {
     if (_isApplying) return;
 
@@ -96,27 +96,8 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     _showApplyingDialog();
 
     try {
-      // Download video first
-      final response = await http.get(
-        Uri.parse(widget.wallpaper.imageUrl),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to download wallpaper');
-      }
-
-      // Save temporary file
-      final tempDir = await getTemporaryDirectory();
-
-      final file = File(
-        '${tempDir.path}/${widget.wallpaper.name}.mp4',
-      );
-
-      await file.writeAsBytes(response.bodyBytes);
-
-      // Apply LOCAL FILE
       final message = await _applyService.applyLiveWallpaper(
-        videoUrl: file.path,
+        videoUrl: widget.wallpaper.imageUrl,
         fileName: widget.wallpaper.name,
       );
 
@@ -137,7 +118,9 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
       Navigator.of(context, rootNavigator: true).pop();
 
       AppSnackbar.error(
-        'Unable to apply live wallpaper.',
+        error is WallpaperApplyException
+            ? error.message
+            : 'Unable to apply live wallpaper.',
       );
     } finally {
       if (mounted) {
@@ -145,6 +128,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
       }
     }
   }
+
   void _showApplyingDialog() {
     showDialog<void>(
       context: context,
@@ -214,8 +198,10 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
       ),
       bottomNavigationBar: BottomActionButtons(
         isApplying: _isApplying,
-        onShare: (){
-          _isSharing ? null : _shareWallpaper();
+        onShare: () {
+          if (!_isSharing) {
+            _shareWallpaper();
+          }
         },
         onApply: _applyWallpaper,
       ),

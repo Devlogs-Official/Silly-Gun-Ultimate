@@ -148,9 +148,9 @@ class _LiveWallpaperCardState extends State<LiveWallpaperCard>
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Icon(
-                                Icons.live_tv_sharp,
+                                Icons.play_circle_fill_rounded,
                                 color: Colors.white,
-                                size: 18,
+                                size: 20,
                               ),
                               SizedBox(width: 6),
                               Text(

@@ -53,12 +53,9 @@ class WallpaperGridItem extends StatelessWidget {
                   CachedNetworkImage(
                     imageUrl: wallpaper.thumbnailUrl,
                     fit: BoxFit.cover,
-                    fadeInDuration:
-                    const Duration(milliseconds: 260),
-                    placeholder: (context, url) =>
-                    const _ImageSkeleton(),
-                    errorWidget: (context, url, error) =>
-                    const _ImageError(),
+                    fadeInDuration: const Duration(milliseconds: 260),
+                    placeholder: (context, url) => const _ImageSkeleton(),
+                    errorWidget: (context, url, error) => const _ImageError(),
                   ),
 
                   Positioned.fill(
@@ -69,18 +66,10 @@ class WallpaperGridItem extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: <Color>[
                             Colors.transparent,
-                            Colors.black.withValues(
-                              alpha: 0.08,
-                            ),
-                            Colors.black.withValues(
-                              alpha: 0.62,
-                            ),
+                            Colors.black.withValues(alpha: 0.08),
+                            Colors.black.withValues(alpha: 0.62),
                           ],
-                          stops: const <double>[
-                            0.45,
-                            0.72,
-                            1,
-                          ],
+                          stops: const <double>[0.45, 0.72, 1],
                         ),
                       ),
                     ),
@@ -103,54 +92,39 @@ class WallpaperGridItem extends StatelessWidget {
                       child: Row(
                         children: <Widget>[
                           Container(
-                            padding:
-                            const EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 10,
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(
-                                alpha: 0.35,
-                              ),
-                              borderRadius:
-                              BorderRadius.circular(30),
+                              color: Colors.black.withValues(alpha: 0.35),
+                              borderRadius: BorderRadius.circular(30),
                               border: Border.all(
-                                color: Colors.white
-                                    .withValues(
-                                  alpha: 0.15,
-                                ),
+                                color: Colors.white.withValues(alpha: 0.15),
                               ),
                             ),
                             child: Row(
-                              mainAxisSize:
-                              MainAxisSize.min,
+                              mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 Icon(
-                                  wallpaper.isLive
-                                      ? Icons
-                                      .live_tv
-                                      : null,
+                                  wallpaper.isLive ? Icons.live_tv : null,
                                   color: Colors.white,
                                   size: 17,
                                 ),
                                 const SizedBox(width: 6),
-                                if(wallpaper.isLive)
-                                Text(
-                                  'Live',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                    color:
-                                    Colors.white,
-                                    fontWeight:
-                                    FontWeight
-                                        .w800,
-                                    letterSpacing:
-                                    0.5,
-                                    fontSize: 12,
+                                if (wallpaper.isLive)
+                                  Text(
+                                    'Live',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.5,
+                                          fontSize: 12,
+                                        ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -168,10 +142,7 @@ class WallpaperGridItem extends StatelessWidget {
 }
 
 class _FavoriteButton extends StatelessWidget {
-  const _FavoriteButton({
-    required this.isFavorite,
-    required this.onTap,
-  });
+  const _FavoriteButton({required this.isFavorite, required this.onTap});
 
   final bool isFavorite;
   final VoidCallback onTap;
@@ -189,36 +160,19 @@ class _FavoriteButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.32),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.12),
-            ),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.18),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
-            transitionBuilder: (
-                child,
-                animation,
-                ) {
-              return ScaleTransition(
-                scale: animation,
-                child: child,
-              );
+            transitionBuilder: (child, animation) {
+              return ScaleTransition(scale: animation, child: child);
             },
             child: Icon(
               isFavorite
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
               key: ValueKey<bool>(isFavorite),
-              color: isFavorite
-                  ? const Color(0xFFFF5C8A)
-                  : Colors.white,
+              color: isFavorite ? const Color(0xFFFF5C8A) : Colors.white,
               size: 22,
             ),
           ),
@@ -238,10 +192,7 @@ class _ImageSkeleton extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[
-            const Color(0xFFFFD1DC),
-            const Color(0xFFFFB3C7),
-          ],
+          colors: <Color>[const Color(0xFFFFD1DC), const Color(0xFFFFB3C7)],
         ),
       ),
       child: const Center(

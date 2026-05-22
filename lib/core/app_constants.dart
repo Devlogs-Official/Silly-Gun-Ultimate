@@ -2,14 +2,13 @@ class AppConstants {
   AppConstants._();
 
   /// Display name shown to the user.
-  static const String appName = 'Silly Smile Live Wallpapers';
+  static const String appName = 'Silly Smile Gun Wallpaper';
 
   /// Marketing version shown in the settings screen footer.
   static const String appVersion = '1.0.0';
 
   /// Android applicationId / Play Store package id used by Rate + Share.
-  static const String androidPackageId =
-      'pro.devlogs.sillysmile.wallpaper.live';
+  static const String androidPackageId = 'pro.devlogs.sillysmilegun.wallpaper';
 
   /// MethodChannel for Android live wallpaper (must match MainActivity).
   static const String androidLiveWallpaperMethodChannel =
@@ -32,6 +31,5 @@ class AppConstants {
       'https://www.devlogs.pro/terms-and-conditions/silly-smile-wallpaper-live';
 
   /// Pre-populated text used by the Share Sheet.
-  static String get shareMessage =>
-      'Check out $appName\n$playStoreUrl';
+  static String get shareMessage => 'Check out $appName\n$playStoreUrl';
 }

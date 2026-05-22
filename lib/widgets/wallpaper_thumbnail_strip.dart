@@ -4,7 +4,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../models/wallpaper_model.dart';
 
-class WallpaperThumbnailStrip extends StatelessWidget {
+class WallpaperThumbnailStrip extends StatefulWidget {
   const WallpaperThumbnailStrip({
     super.key,
     required this.wallpapers,
@@ -17,91 +17,142 @@ class WallpaperThumbnailStrip extends StatelessWidget {
   final ValueChanged<int> onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  State<WallpaperThumbnailStrip> createState() =>
+      _WallpaperThumbnailStripState();
+}
 
+class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
+  static const double _horizontalPadding = 18;
+  static const double _itemWidth = 90;
+  static const double _itemGap = 10;
+
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollSelectedIntoView(animate: false);
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant WallpaperThumbnailStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedIndex != widget.selectedIndex ||
+        oldWidget.wallpapers.length != widget.wallpapers.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollSelectedIntoView();
+      });
+    }
+  }
+
+  void _scrollSelectedIntoView({bool animate = true}) {
+    if (!mounted ||
+        !_scrollController.hasClients ||
+        widget.wallpapers.isEmpty ||
+        widget.selectedIndex < 0 ||
+        widget.selectedIndex >= widget.wallpapers.length) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    final selectedCenter =
+        _horizontalPadding +
+        (widget.selectedIndex * (_itemWidth + _itemGap)) +
+        (_itemWidth / 2);
+    final target = selectedCenter - (position.viewportDimension / 2);
+    final double clampedTarget = target
+        .clamp(0.0, position.maxScrollExtent)
+        .toDouble();
+
+    if ((position.pixels - clampedTarget).abs() < 1) {
+      return;
+    }
+
+    if (animate) {
+      _scrollController.animateTo(
+        clampedTarget,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+      return;
+    }
+
+    _scrollController.jumpTo(clampedTarget);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 92,
       child: ListView.separated(
+        controller: _scrollController,
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
+        padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
         physics: const BouncingScrollPhysics(),
-        itemCount: wallpapers.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemCount: widget.wallpapers.length,
+        separatorBuilder: (context, index) => const SizedBox(width: _itemGap),
         itemBuilder: (context, index) {
-          final wallpaper = wallpapers[index];
-          final selected = index == selectedIndex;
-          final bool isSelected = index == selectedIndex;
-          return GestureDetector(
-            onTap: () => onSelected(index),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-
-                border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFFB00020)
-                      : Colors.transparent,
-                  width: 3,
-                ),
-
-                boxShadow: [
-                  if (isSelected)
-                    BoxShadow(
-                      color: const Color(0xFFB00020).withOpacity(0.35),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                ],
-              ),
-
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: CachedNetworkImage(
-                  imageUrl: wallpaper.thumbnailUrl,
-                  fit: BoxFit.cover,
+          final wallpaper = widget.wallpapers[index];
+          final bool isSelected = index == widget.selectedIndex;
+          return SizedBox(
+            width: _itemWidth,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => widget.onSelected(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
                   width: isSelected ? 78 : 66,
                   height: isSelected ? 78 : 66,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFB00020)
+                          : Colors.transparent,
+                      width: 3,
+                    ),
+
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: const Color(
+                            0xFFB00020,
+                          ).withValues(alpha: 0.35),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                    ],
+                  ),
+
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: CachedNetworkImage(
+                      imageUrl: wallpaper.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      fadeInDuration: const Duration(milliseconds: 220),
+                      placeholder: (context, url) => const _ThumbShimmer(),
+                      errorWidget: (context, url, error) => const ColoredBox(
+                        color: Color(0xFF181C24),
+                        child: Icon(Icons.broken_image_outlined, size: 18),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            // AnimatedContainer(
-            //   duration: const Duration(milliseconds: 220),
-            //   width: 58,
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(16),
-            //     border: Border.all(
-            //       color: selected ? Colors.white : const Color(0x22FFFFFF),
-            //       width: selected ? 2.4 : 1,
-            //     ),
-            //     boxShadow: [
-            //       if (selected)
-            //         BoxShadow(
-            //           color: Colors.white.withValues(alpha: 0.2),
-            //           blurRadius: 16,
-            //           offset: const Offset(0, 8),
-            //         ),
-            //     ],
-            //   ),
-            //   child: ClipRRect(
-            //     borderRadius: BorderRadius.circular(13),
-            //     child: Hero(
-            //       tag: 'wallpaper-thumb-${wallpaper.id}',
-            //       child: CachedNetworkImage(
-            //         imageUrl: wallpaper.thumbnailUrl,
-            //         fit: BoxFit.cover,
-            //         fadeInDuration: const Duration(milliseconds: 220),
-            //         placeholder: (context, url) => const _ThumbShimmer(),
-            //         errorWidget: (context, url, error) => const ColoredBox(
-            //           color: Color(0xFF181C24),
-            //           child: Icon(Icons.broken_image_outlined, size: 18),
-            //         ),
-            //       ),
-            //     ),
-            //   ),
-            // ),
           );
         },
       ),
@@ -121,10 +172,8 @@ class ThumbnailStripShimmer extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18),
         itemCount: 7,
         separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemBuilder: (context, index) => const SizedBox(
-          width: 58,
-          child: _ThumbShimmer(),
-        ),
+        itemBuilder: (context, index) =>
+            const SizedBox(width: 58, child: _ThumbShimmer()),
       ),
     );
   }
