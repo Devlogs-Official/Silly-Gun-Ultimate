@@ -39,8 +39,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         bottom: false,
         child: Column(
           children: [
-            _Header(total: favorites.length),
-            const SizedBox(height: 6),
+            const SizedBox(height: 18),
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 12, 22, 14),
               child: SectionLabel(
@@ -62,32 +61,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             Expanded(child: _FavoritesGrid(items: activeList)),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.total});
-
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
-      child: Row(
-        children: [
-          Container(width: 22, height: 2, color: AppColors.crimson),
-          const SizedBox(width: 10),
-          Text('CHANNEL · 03', style: AppText.eyebrow()),
-          const Spacer(),
-          Text(
-            '${total.toString().padLeft(2, '0')} TOTAL',
-            style: AppText.mono(color: palette.bone),
-          ),
-        ],
       ),
     );
   }

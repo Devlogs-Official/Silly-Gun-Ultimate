@@ -309,27 +309,38 @@ class _PreviewCard extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: palette.obsidian,
-                    border: Border.all(color: palette.hairline),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: ColoredBox(
+                    color: Colors.black,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 280),
+                      layoutBuilder: (currentChild, previousChildren) {
+                        return Stack(
+                          fit: StackFit.expand,
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            ...previousChildren,
+                            ?currentChild,
+                          ],
+                        );
+                      },
                       child: ready
-                          ? SizedBox(
+                          ? SizedBox.expand(
                               key: const ValueKey('video'),
                               child: FittedBox(
                                 clipBehavior: Clip.hardEdge,
@@ -409,8 +420,9 @@ class _PreviewCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

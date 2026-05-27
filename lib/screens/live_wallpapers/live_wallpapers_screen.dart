@@ -106,7 +106,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
             final noData = provider.wallpapers.isEmpty;
 
             if (provider.isLoading && noData) {
-              return const _BodyWithHeader(child: ShimmerGrid());
+              return const ShimmerGrid();
             }
 
             if (!connectivity.hasInternet && noData) {
@@ -134,11 +134,10 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
                   parent: BouncingScrollPhysics(),
                 ),
                 slivers: [
-                  const SliverToBoxAdapter(child: _Header()),
                   if (!connectivity.hasInternet)
                     const SliverToBoxAdapter(child: _OfflineBanner()),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(22, 6, 22, 18),
+                    padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
                     sliver: SliverToBoxAdapter(
                       child: SectionLabel(
                         eyebrow: 'LIVE FEED',
@@ -192,52 +191,6 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
             );
           },
         ),
-      ),
-    );
-  }
-}
-
-class _BodyWithHeader extends StatelessWidget {
-  const _BodyWithHeader({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const _Header(),
-        Expanded(child: child),
-      ],
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header();
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = context.palette;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
-      child: Row(
-        children: [
-          Container(width: 22, height: 2, color: AppColors.crimson),
-          const SizedBox(width: 10),
-          Text('CHANNEL · 02', style: AppText.eyebrow()),
-          const Spacer(),
-          Text('LIVE', style: AppText.mono(color: palette.bone)),
-          const SizedBox(width: 8),
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: AppColors.crimson,
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -262,38 +262,31 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
             ),
           ),
 
-          // 4. Close button + app-name badge row
+          // 4. Close button
           Positioned(
             top: MediaQuery.paddingOf(context).top + 12,
             left: 16,
-            right: 16,
-            child: Row(
-              children: [
-                Material(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(50),
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: Icon(
-                        Icons.close_rounded,
-                        color: Color(0xFFF5F1E8),
-                        size: 18,
-                      ),
-                    ),
+            child: Material(
+              color: Colors.black.withValues(alpha: 0.5),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+                side: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(50),
+                onTap: () => Navigator.of(context).pop(),
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: Color(0xFFF5F1E8),
+                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: _AppNameBadge()),
-              ],
+              ),
             ),
           ),
 
@@ -317,57 +310,6 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
           if (!_isSharing) _shareWallpaper();
         },
         onApply: _applyWallpaper,
-      ),
-    );
-  }
-}
-
-class _AppNameBadge extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 14, 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(2),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 4,
-            height: 28,
-            color: AppColors.crimson,
-          ),
-          const SizedBox(width: 10),
-          Flexible(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PREVIEW · LIVE',
-                  style: AppText.mono(
-                    size: 8.5,
-                    color: AppColors.crimson,
-                    weight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppConstants.appName.toUpperCase(),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.button(
-                    size: 11.5,
-                    color: const Color(0xFFF5F1E8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

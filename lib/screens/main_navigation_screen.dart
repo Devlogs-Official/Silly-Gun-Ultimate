@@ -140,18 +140,18 @@ class _FloatingNavBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        16,
+        14,
         0,
-        16,
-        12 + MediaQuery.viewPaddingOf(context).bottom * 0.4,
+        14,
+        8 + MediaQuery.viewPaddingOf(context).bottom,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(56),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
           child: Container(
-            height: 76,
-            padding: const EdgeInsets.all(6),
+            height: 68,
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: palette.obsidian.withValues(alpha: isDark ? 0.86 : 0.92),
               borderRadius: BorderRadius.circular(56),
@@ -175,7 +175,7 @@ class _FloatingNavBar extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 280),
                       curve: Curves.easeOutCubic,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
                         color: selected
                             ? AppColors.crimson
@@ -197,7 +197,7 @@ class _FloatingNavBar extends StatelessWidget {
                         children: [
                           Icon(
                             selected ? item.activeIcon : item.icon,
-                            size: 22,
+                            size: 24,
                             color: selected
                                 ? const Color(0xFFF5F1E8)
                                 : palette.ash,

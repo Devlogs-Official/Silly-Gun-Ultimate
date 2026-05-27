@@ -521,13 +521,6 @@ class _AboutCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 18),
-            Container(height: 1, color: palette.hairline),
-            const SizedBox(height: 14),
-            Text(
-              'Curated wallpapers. Crafted by DevLogs.',
-              style: AppText.body(size: 13, color: palette.ash),
-            ),
           ],
         ),
       ),
