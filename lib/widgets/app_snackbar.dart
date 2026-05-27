@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 enum AppSnackbarType { success, error, warning, internet }
@@ -30,24 +31,24 @@ class AppSnackbar {
 
   static void _show(String message, AppSnackbarType type) {
     final style = switch (type) {
-      AppSnackbarType.success => _SnackbarStyle(
+      AppSnackbarType.success => const _SnackbarStyle(
           icon: Icons.check_rounded,
           accent: AppColors.crimson,
           label: 'OK',
         ),
-      AppSnackbarType.error => _SnackbarStyle(
+      AppSnackbarType.error => const _SnackbarStyle(
           icon: Icons.priority_high_rounded,
           accent: AppColors.crimson,
           label: 'ERR',
         ),
-      AppSnackbarType.warning => _SnackbarStyle(
+      AppSnackbarType.warning => const _SnackbarStyle(
           icon: Icons.warning_amber_rounded,
           accent: AppColors.emberGlow,
           label: 'WARN',
         ),
-      AppSnackbarType.internet => _SnackbarStyle(
+      AppSnackbarType.internet => const _SnackbarStyle(
           icon: Icons.wifi_off_rounded,
-          accent: AppColors.ash,
+          accent: AppColors.crimsonDeep,
           label: 'NET',
         ),
     };
@@ -55,6 +56,8 @@ class AppSnackbar {
     void showNow() {
       final messenger = messengerKey.currentState;
       if (messenger == null) return;
+      final navigatorContext = messenger.context;
+      final palette = AppPalette.of(navigatorContext);
 
       messenger
         ..hideCurrentSnackBar()
@@ -72,14 +75,14 @@ class AppSnackbar {
                 vertical: 12,
               ),
               decoration: BoxDecoration(
-                color: AppColors.obsidian,
+                color: palette.obsidian,
                 borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: AppColors.hairline),
-                boxShadow: const [
+                border: Border.all(color: palette.hairline),
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x80000000),
+                    color: Colors.black.withValues(alpha: 0.32),
                     blurRadius: 24,
-                    offset: Offset(0, 12),
+                    offset: const Offset(0, 12),
                   ),
                 ],
               ),
@@ -97,13 +100,17 @@ class AppSnackbar {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(style.icon, color: AppColors.bone, size: 14),
+                        Icon(
+                          style.icon,
+                          color: const Color(0xFFF5F1E8),
+                          size: 14,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           style.label,
                           style: AppText.mono(
                             size: 9.5,
-                            color: AppColors.bone,
+                            color: const Color(0xFFF5F1E8),
                             weight: FontWeight.w800,
                           ),
                         ),
@@ -115,7 +122,7 @@ class AppSnackbar {
                     child: Text(
                       message,
                       style: AppText.body(
-                        color: AppColors.bone,
+                        color: palette.bone,
                         size: 13.5,
                         weight: FontWeight.w600,
                       ),

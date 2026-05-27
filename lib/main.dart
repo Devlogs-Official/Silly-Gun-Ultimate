@@ -13,6 +13,7 @@ import 'services/connectivity_service.dart';
 import 'services/settings_service.dart';
 import 'services/wallpaper_cache_service.dart';
 import 'widgets/app_colors.dart';
+import 'widgets/app_palette.dart';
 import 'widgets/app_snackbar.dart';
 import 'widgets/app_typography.dart';
 
@@ -21,15 +22,6 @@ Future<void> main() async {
     () async {
       WidgetsFlutterBinding.ensureInitialized();
       ErrorHandler.initialize();
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          statusBarBrightness: Brightness.dark,
-          systemNavigationBarColor: AppColors.ink,
-          systemNavigationBarIconBrightness: Brightness.light,
-        ),
-      );
 
       final cacheService = WallpaperCacheService();
       try {
@@ -87,101 +79,142 @@ class SillyGunWallpapersApp extends StatelessWidget {
           create: (_) => FavoritesProvider()..loadFavorites(),
         ),
       ],
-      child: MaterialApp(
-        navigatorKey: ErrorHandler.navigatorKey,
-        scaffoldMessengerKey: AppSnackbar.messengerKey,
-        debugShowCheckedModeBanner: false,
-        title: 'Silly Smile Gun Wallpaper',
-        theme: ThemeData(
-          useMaterial3: true,
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: AppColors.ink,
-          canvasColor: AppColors.ink,
-          textTheme: AppText.textTheme(),
-          colorScheme: const ColorScheme.dark(
-            brightness: Brightness.dark,
-            primary: AppColors.crimson,
-            onPrimary: AppColors.bone,
-            secondary: AppColors.emberGlow,
-            onSecondary: AppColors.ink,
-            surface: AppColors.obsidian,
-            onSurface: AppColors.bone,
-            surfaceContainerHighest: AppColors.graphite,
-            outline: AppColors.hairline,
-            error: AppColors.crimsonDeep,
-          ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: AppColors.ink,
-            foregroundColor: AppColors.bone,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            centerTitle: false,
-            titleTextStyle: AppText.headline(size: 17, weight: FontWeight.w800),
-            iconTheme: const IconThemeData(color: AppColors.bone),
-          ),
-          dialogTheme: DialogThemeData(
-            backgroundColor: AppColors.obsidian,
-            elevation: 0,
-            surfaceTintColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: AppColors.hairline),
-            ),
-            titleTextStyle: AppText.headline(size: 18),
-            contentTextStyle: AppText.body(),
-          ),
-          filledButtonTheme: FilledButtonThemeData(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.crimson,
-              foregroundColor: AppColors.bone,
-              disabledBackgroundColor: AppColors.crimson.withValues(alpha: 0.4),
-              minimumSize: const Size(0, 52),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(2)),
-              ),
-              textStyle: AppText.button(),
-            ),
-          ),
-          outlinedButtonTheme: OutlinedButtonThemeData(
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.bone,
-              side: const BorderSide(color: AppColors.hairline),
-              minimumSize: const Size(0, 52),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(2)),
-              ),
-              textStyle: AppText.button(),
-            ),
-          ),
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: AppColors.bone,
-              textStyle: AppText.button(),
-            ),
-          ),
-          progressIndicatorTheme: const ProgressIndicatorThemeData(
-            color: AppColors.crimson,
-            linearTrackColor: AppColors.graphite,
-            circularTrackColor: AppColors.graphite,
-          ),
-          drawerTheme: const DrawerThemeData(
-            backgroundColor: AppColors.ink,
-            scrimColor: Color(0xCC000000),
-          ),
-          dividerTheme: const DividerThemeData(
-            color: AppColors.hairline,
-            thickness: 1,
-            space: 1,
-          ),
-          iconTheme: const IconThemeData(color: AppColors.bone),
-          listTileTheme: const ListTileThemeData(
-            iconColor: AppColors.bone,
-            textColor: AppColors.bone,
-          ),
-          splashFactory: InkSparkle.splashFactory,
-        ),
-        home: const SplashScreen(),
+      child: Consumer<SettingsService>(
+        builder: (context, settings, _) {
+          return MaterialApp(
+            navigatorKey: ErrorHandler.navigatorKey,
+            scaffoldMessengerKey: AppSnackbar.messengerKey,
+            debugShowCheckedModeBanner: false,
+            title: 'Silly Smile Gun Wallpaper',
+            theme: _buildTheme(Brightness.light),
+            darkTheme: _buildTheme(Brightness.dark),
+            themeMode: settings.themeMode.flutterMode,
+            builder: (context, child) {
+              final brightness = Theme.of(context).brightness;
+              final palette = AppPalette.of(context);
+              SystemChrome.setSystemUIOverlayStyle(
+                SystemUiOverlayStyle(
+                  statusBarColor: Colors.transparent,
+                  statusBarIconBrightness: brightness == Brightness.dark
+                      ? Brightness.light
+                      : Brightness.dark,
+                  statusBarBrightness: brightness,
+                  systemNavigationBarColor: palette.ink,
+                  systemNavigationBarIconBrightness:
+                      brightness == Brightness.dark
+                          ? Brightness.light
+                          : Brightness.dark,
+                ),
+              );
+              return child ?? const SizedBox.shrink();
+            },
+            home: const SplashScreen(),
+          );
+        },
       ),
+    );
+  }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final palette = isDark ? AppPalette.dark : AppPalette.light;
+    final baseTextTheme = isDark
+        ? AppText.darkTextTheme()
+        : AppText.lightTextTheme();
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      scaffoldBackgroundColor: palette.ink,
+      canvasColor: palette.ink,
+      textTheme: baseTextTheme,
+      extensions: [palette],
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: AppColors.crimson,
+        onPrimary: const Color(0xFFF5F1E8),
+        secondary: AppColors.emberGlow,
+        onSecondary: palette.bone,
+        surface: palette.ink,
+        onSurface: palette.bone,
+        surfaceContainerHighest: palette.graphite,
+        outline: palette.hairline,
+        error: AppColors.crimsonDeep,
+        onError: const Color(0xFFF5F1E8),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.ink,
+        foregroundColor: palette.bone,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: AppText.headline(
+          size: 17,
+          weight: FontWeight.w800,
+          color: palette.bone,
+        ),
+        iconTheme: IconThemeData(color: palette.bone),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: palette.obsidian,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+          side: BorderSide(color: palette.hairline),
+        ),
+        titleTextStyle: AppText.headline(size: 18, color: palette.bone),
+        contentTextStyle: AppText.body(color: palette.ash),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.crimson,
+          foregroundColor: const Color(0xFFF5F1E8),
+          disabledBackgroundColor: AppColors.crimson.withValues(alpha: 0.4),
+          minimumSize: const Size(0, 52),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(2)),
+          ),
+          textStyle: AppText.button(),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: palette.bone,
+          side: BorderSide(color: palette.hairline),
+          minimumSize: const Size(0, 52),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(2)),
+          ),
+          textStyle: AppText.button(),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: palette.bone,
+          textStyle: AppText.button(),
+        ),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: AppColors.crimson,
+        linearTrackColor: palette.graphite,
+        circularTrackColor: palette.graphite,
+      ),
+      drawerTheme: DrawerThemeData(
+        backgroundColor: palette.ink,
+        scrimColor: const Color(0xAA000000),
+      ),
+      dividerTheme: DividerThemeData(
+        color: palette.hairline,
+        thickness: 1,
+        space: 1,
+      ),
+      iconTheme: IconThemeData(color: palette.bone),
+      listTileTheme: ListTileThemeData(
+        iconColor: palette.bone,
+        textColor: palette.bone,
+      ),
+      splashFactory: InkSparkle.splashFactory,
     );
   }
 }

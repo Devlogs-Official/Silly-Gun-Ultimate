@@ -14,6 +14,7 @@ import '../../models/wallpaper_model.dart';
 import '../../services/settings_service.dart';
 import '../../services/wallpaper_apply_service.dart';
 import '../../widgets/app_colors.dart';
+import '../../widgets/app_palette.dart';
 import '../../widgets/app_snackbar.dart';
 import '../../widgets/app_typography.dart';
 import '../../widgets/bottom_action_buttons.dart';
@@ -124,35 +125,38 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: const Color(0xCC000000),
-      builder: (_) => Center(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
-          decoration: BoxDecoration(
-            color: AppColors.obsidian,
-            borderRadius: BorderRadius.circular(2),
-            border: Border.all(color: AppColors.hairline),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.crimson,
+      barrierColor: const Color(0xAA000000),
+      builder: (ctx) {
+        final palette = ctx.palette;
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
+            decoration: BoxDecoration(
+              color: palette.obsidian,
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(color: palette.hairline),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.crimson,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'APPLYING',
-                style: AppText.button(color: AppColors.bone, size: 12),
-              ),
-            ],
+                const SizedBox(height: 14),
+                Text(
+                  'APPLYING',
+                  style: AppText.button(color: palette.bone, size: 12),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -165,8 +169,9 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,
@@ -177,10 +182,10 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
               width: double.infinity,
               height: double.infinity,
               placeholder: (_, _) => const VideoLoader(borderRadius: 0),
-              errorWidget: (_, _, _) => const Center(
+              errorWidget: (_, _, _) => Center(
                 child: Icon(
                   Icons.broken_image,
-                  color: AppColors.ash,
+                  color: palette.ash,
                   size: 40,
                 ),
               ),
@@ -189,10 +194,12 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
               top: MediaQuery.paddingOf(context).top + 12,
               left: 16,
               child: Material(
-                color: AppColors.ink.withValues(alpha: 0.6),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(50)),
-                  side: BorderSide(color: AppColors.hairline),
+                color: Colors.black.withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  side: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(50),
@@ -202,7 +209,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
                     height: 44,
                     child: Icon(
                       Icons.close_rounded,
-                      color: AppColors.bone,
+                      color: Color(0xFFF5F1E8),
                       size: 18,
                     ),
                   ),

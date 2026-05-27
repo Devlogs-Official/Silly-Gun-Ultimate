@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 class BottomActionButtons extends StatelessWidget {
@@ -17,10 +17,11 @@ class BottomActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.ink,
-        border: const Border(top: BorderSide(color: AppColors.hairline)),
+        color: palette.ink,
+        border: Border(top: BorderSide(color: palette.hairline)),
       ),
       child: SafeArea(
         top: false,
@@ -70,18 +71,19 @@ class _SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Material(
-      color: AppColors.obsidian,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(2)),
-        side: BorderSide(color: AppColors.hairline),
+      color: palette.obsidian,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(2),
+        side: BorderSide(color: palette.hairline),
       ),
       child: InkWell(
         onTap: onPressed,
         child: SizedBox(
           height: 56,
           child: Center(
-            child: Icon(icon, color: AppColors.bone, size: 18),
+            child: Icon(icon, color: palette.bone, size: 18),
           ),
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 class RetryWidget extends StatelessWidget {
@@ -19,6 +20,7 @@ class RetryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
@@ -29,9 +31,9 @@ class RetryWidget extends StatelessWidget {
               width: 76,
               height: 76,
               decoration: BoxDecoration(
-                color: AppColors.obsidian,
+                color: palette.obsidian,
                 borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: AppColors.hairline),
+                border: Border.all(color: palette.hairline),
               ),
               child: const Icon(
                 Icons.refresh_rounded,
@@ -52,13 +54,17 @@ class RetryWidget extends StatelessWidget {
             Text(
               title.toUpperCase(),
               textAlign: TextAlign.center,
-              style: AppText.display(size: 28, letterSpacing: 1.4),
+              style: AppText.display(
+                size: 28,
+                letterSpacing: 1.4,
+                color: palette.bone,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: AppText.body(),
+              style: AppText.body(color: palette.ash),
             ),
             const SizedBox(height: 22),
             FilledButton.icon(

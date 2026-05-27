@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/wallpaper_model.dart';
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 class WallpaperGridItem extends StatelessWidget {
@@ -25,6 +26,8 @@ class WallpaperGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final double height = index.isEven ? 240 : 320;
 
     return Hero(
@@ -38,14 +41,14 @@ class WallpaperGridItem extends StatelessWidget {
             duration: const Duration(milliseconds: 220),
             height: height,
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: palette.obsidian,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppColors.hairline),
-              boxShadow: const [
+              border: Border.all(color: palette.hairline),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x55000000),
+                  color: Colors.black.withValues(alpha: isDark ? 0.34 : 0.10),
                   blurRadius: 18,
-                  offset: Offset(0, 10),
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
@@ -58,11 +61,10 @@ class WallpaperGridItem extends StatelessWidget {
                     imageUrl: wallpaper.thumbnailUrl,
                     fit: BoxFit.cover,
                     fadeInDuration: const Duration(milliseconds: 260),
-                    placeholder: (_, _) => const _ImageSkeleton(),
-                    errorWidget: (_, _, _) => const _ImageError(),
+                    placeholder: (_, _) => _ImageSkeleton(palette: palette),
+                    errorWidget: (_, _, _) => _ImageError(palette: palette),
                   ),
-
-                  // Subtle vertical gradient
+                  // Subtle vertical gradient for legibility of overlays
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -71,15 +73,14 @@ class WallpaperGridItem extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            AppColors.ink.withValues(alpha: 0.55),
+                            Colors.black.withValues(alpha: 0.55),
                           ],
                           stops: const [0.5, 1],
                         ),
                       ),
                     ),
                   ),
-
-                  // Index badge — bottom-left
+                  // Index — bottom-left
                   Positioned(
                     left: 10,
                     bottom: 10,
@@ -87,11 +88,10 @@ class WallpaperGridItem extends StatelessWidget {
                       (index + 1).toString().padLeft(2, '0'),
                       style: AppText.mono(
                         size: 11,
-                        color: AppColors.bone,
+                        color: const Color(0xFFF5F1E8),
                       ),
                     ),
                   ),
-
                   // Live badge — bottom-right
                   if (showTypeBadge && wallpaper.isLive)
                     Positioned(
@@ -114,7 +114,7 @@ class WallpaperGridItem extends StatelessWidget {
                               height: 5,
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color: AppColors.bone,
+                                  color: Color(0xFFF5F1E8),
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -124,7 +124,7 @@ class WallpaperGridItem extends StatelessWidget {
                               'LIVE',
                               style: AppText.mono(
                                 size: 9,
-                                color: AppColors.bone,
+                                color: const Color(0xFFF5F1E8),
                                 weight: FontWeight.w800,
                               ),
                             ),
@@ -132,7 +132,6 @@ class WallpaperGridItem extends StatelessWidget {
                         ),
                       ),
                     ),
-
                   // Favorite — top-right
                   Positioned(
                     top: 10,
@@ -169,9 +168,9 @@ class _FavoriteButton extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: AppColors.ink.withValues(alpha: 0.6),
+            color: Colors.black.withValues(alpha: 0.45),
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.hairline),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
           ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
@@ -182,7 +181,9 @@ class _FavoriteButton extends StatelessWidget {
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
               key: ValueKey<bool>(isFavorite),
-              color: isFavorite ? AppColors.crimson : AppColors.bone,
+              color: isFavorite
+                  ? AppColors.crimson
+                  : const Color(0xFFF5F1E8),
               size: 18,
             ),
           ),
@@ -193,13 +194,15 @@ class _FavoriteButton extends StatelessWidget {
 }
 
 class _ImageSkeleton extends StatelessWidget {
-  const _ImageSkeleton();
+  const _ImageSkeleton({required this.palette});
+
+  final AppPalette palette;
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: AppColors.graphite,
-      child: Center(
+    return ColoredBox(
+      color: palette.graphite,
+      child: const Center(
         child: SizedBox(
           width: 18,
           height: 18,
@@ -214,16 +217,18 @@ class _ImageSkeleton extends StatelessWidget {
 }
 
 class _ImageError extends StatelessWidget {
-  const _ImageError();
+  const _ImageError({required this.palette});
+
+  final AppPalette palette;
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: AppColors.graphite,
+    return ColoredBox(
+      color: palette.graphite,
       child: Center(
         child: Icon(
           Icons.broken_image_outlined,
-          color: AppColors.ash,
+          color: palette.ash,
           size: 28,
         ),
       ),

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
-/// "Eyebrow + crimson tick + headline" — recurring section header motif.
-///
-///    ── SECTION                 03 ─┐
-///    Bold Heading Text              │
 class SectionLabel extends StatelessWidget {
   const SectionLabel({
     super.key,
@@ -21,6 +18,7 @@ class SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -42,14 +40,18 @@ class SectionLabel extends StatelessWidget {
             if (trailing != null)
               Text(
                 trailing!,
-                style: AppText.mono(color: AppColors.smoke),
+                style: AppText.mono(color: palette.smoke),
               ),
           ],
         ),
         const SizedBox(height: 8),
         Text(
           headline,
-          style: AppText.display(size: 32, letterSpacing: 1.4),
+          style: AppText.display(
+            size: 32,
+            letterSpacing: 1.4,
+            color: palette.bone,
+          ),
         ),
       ],
     );

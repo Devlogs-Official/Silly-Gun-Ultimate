@@ -7,6 +7,7 @@ import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
 import '../../widgets/app_colors.dart';
+import '../../widgets/app_palette.dart';
 import '../../widgets/app_snackbar.dart';
 import '../../widgets/app_typography.dart';
 import '../../widgets/no_internet_widget.dart';
@@ -94,8 +95,9 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       body: SafeArea(
         bottom: false,
         child: Consumer2<WallpaperProvider, ConnectivityService>(
@@ -124,7 +126,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
 
             return RefreshIndicator.adaptive(
               color: AppColors.crimson,
-              backgroundColor: AppColors.obsidian,
+              backgroundColor: palette.obsidian,
               onRefresh: _refreshWallpapers,
               child: CustomScrollView(
                 controller: _scrollController,
@@ -147,7 +149,7 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 130),
                     sliver: SliverToBoxAdapter(
                       child: MasonryGridView.count(
                         shrinkWrap: true,
@@ -155,9 +157,8 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 14,
                         crossAxisSpacing: 14,
-                        itemCount:
-                            provider.wallpapers.length +
-                                (provider.isLoadingMore ? 1 : 0),
+                        itemCount: provider.wallpapers.length +
+                            (provider.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index >= provider.wallpapers.length) {
                             return const _BottomLoader();
@@ -217,6 +218,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
       child: Row(
@@ -225,7 +227,7 @@ class _Header extends StatelessWidget {
           const SizedBox(width: 10),
           Text('CHANNEL · 02', style: AppText.eyebrow()),
           const Spacer(),
-          Text('LIVE', style: AppText.mono(color: AppColors.bone)),
+          Text('LIVE', style: AppText.mono(color: palette.bone)),
           const SizedBox(width: 8),
           Container(
             width: 8,
@@ -266,9 +268,10 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return RefreshIndicator.adaptive(
       color: AppColors.crimson,
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: palette.obsidian,
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -283,13 +286,17 @@ class _EmptyState extends StatelessWidget {
           Text(
             'NOTHING LIVE YET',
             textAlign: TextAlign.center,
-            style: AppText.display(size: 24, letterSpacing: 2.4),
+            style: AppText.display(
+              size: 24,
+              letterSpacing: 2.4,
+              color: palette.bone,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Pull down to refresh.',
             textAlign: TextAlign.center,
-            style: AppText.body(),
+            style: AppText.body(color: palette.ash),
           ),
         ],
       ),
@@ -302,12 +309,13 @@ class _OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.fromLTRB(22, 8, 22, 0),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.obsidian,
+        color: palette.obsidian,
         borderRadius: BorderRadius.circular(2),
         border: const Border(
           left: BorderSide(color: AppColors.crimson, width: 2),
@@ -324,7 +332,7 @@ class _OfflineBanner extends StatelessWidget {
           Expanded(
             child: Text(
               'Offline · Showing cached wallpapers',
-              style: AppText.body(color: AppColors.bone, size: 12.5),
+              style: AppText.body(color: palette.bone, size: 12.5),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),

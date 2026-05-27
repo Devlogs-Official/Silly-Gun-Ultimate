@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../models/wallpaper_model.dart';
 import 'app_colors.dart';
+import 'app_palette.dart';
 
 class WallpaperThumbnailStrip extends StatefulWidget {
   const WallpaperThumbnailStrip({
@@ -88,9 +89,10 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       height: 96,
-      color: AppColors.ink,
+      color: palette.ink,
       child: ListView.separated(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
@@ -114,14 +116,13 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(2),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.crimson
-                          : AppColors.hairline,
+                      color:
+                          isSelected ? AppColors.crimson : palette.hairline,
                       width: 2,
                     ),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(0),
+                    borderRadius: BorderRadius.zero,
                     child: CachedNetworkImage(
                       imageUrl: wallpaper.thumbnailUrl,
                       fit: BoxFit.cover,
@@ -129,12 +130,12 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
                       height: double.infinity,
                       fadeInDuration: const Duration(milliseconds: 220),
                       placeholder: (_, _) => const _ThumbShimmer(),
-                      errorWidget: (_, _, _) => const ColoredBox(
-                        color: AppColors.graphite,
+                      errorWidget: (_, _, _) => ColoredBox(
+                        color: palette.graphite,
                         child: Icon(
                           Icons.broken_image_outlined,
                           size: 16,
-                          color: AppColors.ash,
+                          color: palette.ash,
                         ),
                       ),
                     ),
@@ -173,9 +174,10 @@ class _ThumbShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Shimmer.fromColors(
-      baseColor: AppColors.obsidian,
-      highlightColor: AppColors.graphite,
+      baseColor: palette.obsidian,
+      highlightColor: palette.graphite,
       child: Container(
         decoration: const BoxDecoration(color: Colors.white),
       ),

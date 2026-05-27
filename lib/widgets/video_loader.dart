@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'app_colors.dart';
+import 'app_palette.dart';
 
 class VideoLoader extends StatelessWidget {
   const VideoLoader({
@@ -13,9 +13,10 @@ class VideoLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Shimmer.fromColors(
-      baseColor: AppColors.obsidian,
-      highlightColor: AppColors.graphite,
+      baseColor: palette.obsidian,
+      highlightColor: palette.graphite,
       period: const Duration(milliseconds: 1400),
       child: Container(
         decoration: BoxDecoration(

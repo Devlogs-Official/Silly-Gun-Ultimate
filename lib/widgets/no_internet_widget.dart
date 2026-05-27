@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 class NoInternetWidget extends StatefulWidget {
@@ -44,12 +45,12 @@ class _NoInternetWidgetState extends State<NoInternetWidget>
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(30),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ScaleTransition(
               scale: _scale,
@@ -57,7 +58,7 @@ class _NoInternetWidgetState extends State<NoInternetWidget>
                 width: 88,
                 height: 88,
                 decoration: BoxDecoration(
-                  color: AppColors.obsidian,
+                  color: palette.obsidian,
                   borderRadius: BorderRadius.circular(2),
                   border: Border.all(color: AppColors.crimson),
                 ),
@@ -81,13 +82,17 @@ class _NoInternetWidgetState extends State<NoInternetWidget>
             Text(
               'NO SIGNAL',
               textAlign: TextAlign.center,
-              style: AppText.display(size: 40, letterSpacing: 1.2),
+              style: AppText.display(
+                size: 40,
+                letterSpacing: 1.2,
+                color: palette.bone,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
               'Check your connection and try again.',
               textAlign: TextAlign.center,
-              style: AppText.body(),
+              style: AppText.body(color: palette.ash),
             ),
             const SizedBox(height: 26),
             FilledButton.icon(

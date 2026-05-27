@@ -4,8 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_constants.dart';
 import '../widgets/app_colors.dart';
+import '../widgets/app_palette.dart';
+import '../widgets/app_snackbar.dart';
 import '../widgets/app_typography.dart';
-import 'policy_screen.dart';
 import 'settings_screen.dart';
 
 class ModernDrawer extends StatelessWidget {
@@ -34,30 +35,37 @@ class ModernDrawer extends StatelessWidget {
     );
   }
 
-  void _openPolicy(
-    BuildContext context, {
-    required String title,
-    required String url,
-  }) {
+  Future<void> _openWebPage(BuildContext context, String url) async {
     Navigator.pop(context);
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => PolicyScreen(title: title, url: url),
-      ),
-    );
+    try {
+      final ok = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.inAppBrowserView,
+      );
+      if (!ok) {
+        await launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+        );
+      }
+    } catch (_) {
+      AppSnackbar.error('Unable to open this page. Please try again.');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Drawer(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       width: MediaQuery.sizeOf(context).width * 0.84,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.only(
           topRight: Radius.circular(2),
           bottomRight: Radius.circular(2),
         ),
-        side: BorderSide(color: AppColors.hairline),
+        side: BorderSide(color: palette.hairline),
       ),
       child: SafeArea(
         child: Column(
@@ -73,7 +81,8 @@ class ModernDrawer extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Container(width: 22, height: 2, color: AppColors.crimson),
+                            Container(
+                                width: 22, height: 2, color: AppColors.crimson),
                             const SizedBox(width: 10),
                             Text('MENU · 01', style: AppText.eyebrow()),
                           ],
@@ -81,7 +90,8 @@ class ModernDrawer extends StatelessWidget {
                         const SizedBox(height: 14),
                         Text(
                           'SILLY',
-                          style: AppText.display(size: 44, height: 0.88),
+                          style:
+                              AppText.display(size: 44, height: 0.88, color: palette.bone),
                         ),
                         Text(
                           'SMILE.',
@@ -97,11 +107,11 @@ class ModernDrawer extends StatelessWidget {
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.obsidian,
-                      foregroundColor: AppColors.bone,
+                      backgroundColor: palette.obsidian,
+                      foregroundColor: palette.bone,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(50),
-                        side: const BorderSide(color: AppColors.hairline),
+                        side: BorderSide(color: palette.hairline),
                       ),
                       minimumSize: const Size(42, 42),
                     ),
@@ -110,9 +120,7 @@ class ModernDrawer extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
@@ -145,27 +153,22 @@ class ModernDrawer extends StatelessWidget {
                     index: '04',
                     icon: Icons.shield_outlined,
                     label: 'PRIVACY POLICY',
-                    onTap: () => _openPolicy(
-                      context,
-                      title: 'Privacy Policy',
-                      url: AppConstants.privacyPolicyUrl,
-                    ),
+                    onTap: () =>
+                        _openWebPage(context, AppConstants.privacyPolicyUrl),
                   ),
                   _DrawerTile(
                     index: '05',
                     icon: Icons.article_outlined,
                     label: 'TERMS & CONDITIONS',
-                    onTap: () => _openPolicy(
+                    onTap: () => _openWebPage(
                       context,
-                      title: 'Terms & Conditions',
-                      url: AppConstants.termsAndConditionsUrl,
+                      AppConstants.termsAndConditionsUrl,
                     ),
                     isLast: true,
                   ),
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 14, 24, 22),
               child: Row(
@@ -174,12 +177,12 @@ class ModernDrawer extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     'VERSION ${AppConstants.appVersion}',
-                    style: AppText.mono(size: 10, color: AppColors.smoke),
+                    style: AppText.mono(size: 10, color: palette.smoke),
                   ),
                   const Spacer(),
                   Text(
                     '© DEVLOGS',
-                    style: AppText.mono(size: 10, color: AppColors.smoke),
+                    style: AppText.mono(size: 10, color: palette.smoke),
                   ),
                 ],
               ),
@@ -208,13 +211,14 @@ class _DrawerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return InkWell(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isLast ? Colors.transparent : AppColors.hairline,
+              color: isLast ? Colors.transparent : palette.hairline,
             ),
           ),
         ),
@@ -228,17 +232,17 @@ class _DrawerTile extends StatelessWidget {
                 style: AppText.mono(size: 11, color: AppColors.crimson),
               ),
             ),
-            Icon(icon, color: AppColors.bone, size: 20),
+            Icon(icon, color: palette.bone, size: 20),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 label,
-                style: AppText.button(color: AppColors.bone, size: 14),
+                style: AppText.button(color: palette.bone, size: 14),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_outward_rounded,
-              color: AppColors.ash,
+              color: palette.ash,
               size: 18,
             ),
           ],

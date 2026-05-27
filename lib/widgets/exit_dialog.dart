@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
+import 'app_palette.dart';
 import 'app_typography.dart';
 
 class ExitDialog {
@@ -11,22 +12,23 @@ class ExitDialog {
     final shouldExit = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
-      barrierColor: const Color(0xCC000000),
+      barrierColor: const Color(0xAA000000),
       builder: (context) {
+        final palette = context.palette;
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 28),
           child: Container(
             padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: palette.obsidian,
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: AppColors.hairline),
-              boxShadow: const [
+              border: Border.all(color: palette.hairline),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x80000000),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 28,
-                  offset: Offset(0, 14),
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
@@ -44,12 +46,16 @@ class ExitDialog {
                 const SizedBox(height: 12),
                 Text(
                   'LEAVE GALLERY?',
-                  style: AppText.display(size: 30, letterSpacing: 1.2),
+                  style: AppText.display(
+                    size: 30,
+                    letterSpacing: 1.2,
+                    color: palette.bone,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Your saved wallpapers stay with you for next time.',
-                  style: AppText.body(),
+                  style: AppText.body(color: palette.ash),
                 ),
                 const SizedBox(height: 22),
                 Row(

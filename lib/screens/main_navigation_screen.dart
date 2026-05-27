@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/wallpaper_provider.dart';
 import '../widgets/app_colors.dart';
+import '../widgets/app_palette.dart';
 import '../widgets/app_typography.dart';
 import 'app_drawer.dart';
 import 'favorites_screen.dart';
@@ -40,7 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Exit App',
-      barrierColor: const Color(0xCC000000),
+      barrierColor: const Color(0xAA000000),
       transitionDuration: const Duration(milliseconds: 320),
       pageBuilder: (_, _, _) => const _ExitAppDialog(),
       transitionBuilder: (context, animation, _, child) {
@@ -80,13 +81,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: AppColors.ink,
+        backgroundColor: palette.ink,
         extendBody: true,
         drawer: const ModernDrawer(),
         body: AnimatedSwitcher(
@@ -115,35 +117,50 @@ class _FloatingNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   static const List<_NavItem> _items = <_NavItem>[
-    _NavItem(label: 'HOME', icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded),
-    _NavItem(label: 'LIVE', icon: Icons.play_circle_outline_rounded, activeIcon: Icons.play_circle_fill_rounded),
-    _NavItem(label: 'SAVED', icon: Icons.bookmark_outline_rounded, activeIcon: Icons.bookmark_rounded),
+    _NavItem(
+      label: 'HOME',
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard_rounded,
+    ),
+    _NavItem(
+      label: 'LIVE',
+      icon: Icons.play_circle_outline_rounded,
+      activeIcon: Icons.play_circle_fill_rounded,
+    ),
+    _NavItem(
+      label: 'SAVED',
+      icon: Icons.bookmark_outline_rounded,
+      activeIcon: Icons.bookmark_rounded,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
+        16,
         0,
-        20,
-        16 + MediaQuery.viewPaddingOf(context).bottom * 0.4,
+        16,
+        12 + MediaQuery.viewPaddingOf(context).bottom * 0.4,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(56),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
           child: Container(
-            height: 68,
+            height: 76,
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: AppColors.obsidian.withValues(alpha: 0.86),
+              color: palette.obsidian.withValues(alpha: isDark ? 0.86 : 0.92),
               borderRadius: BorderRadius.circular(56),
-              border: Border.all(color: AppColors.hairline),
-              boxShadow: const [
+              border: Border.all(color: palette.hairline),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x66000000),
-                  blurRadius: 30,
-                  offset: Offset(0, 14),
+                  color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.12),
+                  blurRadius: 32,
+                  offset: const Offset(0, 16),
                 ),
               ],
             ),
@@ -152,32 +169,46 @@ class _FloatingNavBar extends StatelessWidget {
                 final item = _items[index];
                 final selected = index == selectedIndex;
                 return Expanded(
-                  child: InkWell(
+                  child: GestureDetector(
                     onTap: () => onTap(index),
-                    borderRadius: BorderRadius.circular(56),
+                    behavior: HitTestBehavior.opaque,
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 260),
+                      duration: const Duration(milliseconds: 280),
                       curve: Curves.easeOutCubic,
-                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
                       decoration: BoxDecoration(
-                        color: selected ? AppColors.crimson : Colors.transparent,
+                        color: selected
+                            ? AppColors.crimson
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(48),
+                        boxShadow: selected
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.crimson
+                                      .withValues(alpha: 0.35),
+                                  blurRadius: 16,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ]
+                            : null,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             selected ? item.activeIcon : item.icon,
-                            size: 20,
-                            color: selected ? AppColors.bone : AppColors.ash,
+                            size: 22,
+                            color: selected
+                                ? const Color(0xFFF5F1E8)
+                                : palette.ash,
                           ),
                           if (selected) ...[
                             const SizedBox(width: 8),
                             Text(
                               item.label,
                               style: AppText.button(
-                                color: AppColors.bone,
-                                size: 11,
+                                color: const Color(0xFFF5F1E8),
+                                size: 12,
                               ),
                             ),
                           ],
@@ -212,6 +243,7 @@ class _ExitAppDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -220,13 +252,13 @@ class _ExitAppDialog extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
-              color: AppColors.obsidian,
-              border: Border.all(color: AppColors.hairline),
-              boxShadow: const [
+              color: palette.obsidian,
+              border: Border.all(color: palette.hairline),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x80000000),
+                  color: Colors.black.withValues(alpha: 0.4),
                   blurRadius: 28,
-                  offset: Offset(0, 14),
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
@@ -245,12 +277,16 @@ class _ExitAppDialog extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   'LEAVE GALLERY?',
-                  style: AppText.display(size: 32, letterSpacing: 1.2),
+                  style: AppText.display(
+                    size: 32,
+                    letterSpacing: 1.2,
+                    color: palette.bone,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   'Your saved wallpapers stay with you for next time.',
-                  style: AppText.body(),
+                  style: AppText.body(color: palette.ash),
                 ),
                 const SizedBox(height: 22),
                 Row(

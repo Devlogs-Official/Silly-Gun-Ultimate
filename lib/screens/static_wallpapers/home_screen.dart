@@ -6,7 +6,9 @@ import '../../models/wallpaper_model.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
+import '../../services/settings_service.dart';
 import '../../widgets/app_colors.dart';
+import '../../widgets/app_palette.dart';
 import '../../widgets/app_snackbar.dart';
 import '../../widgets/app_typography.dart';
 import '../../widgets/no_internet_widget.dart';
@@ -103,11 +105,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final FavoritesProvider favoritesProvider =
-        context.watch<FavoritesProvider>();
+    final favoritesProvider = context.watch<FavoritesProvider>();
+    final palette = context.palette;
 
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       drawer: const ModernDrawer(),
       body: SafeArea(
         bottom: false,
@@ -140,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return RefreshIndicator.adaptive(
               color: AppColors.crimson,
-              backgroundColor: AppColors.obsidian,
+              backgroundColor: palette.obsidian,
               onRefresh: _refreshWallpapers,
               child: CustomScrollView(
                 controller: _scrollController,
@@ -171,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 130),
                     sliver: SliverToBoxAdapter(
                       child: MasonryGridView.count(
                         shrinkWrap: true,
@@ -186,7 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             if (provider.isLoadingMoreFor(isLive: false)) {
                               return const _BottomLoaderTile();
                             }
-                            if (provider.errorMessageFor(isLive: false) != null &&
+                            if (provider.errorMessageFor(isLive: false) !=
+                                    null &&
                                 provider.hasMoreFor(isLive: false)) {
                               return _LoadMoreRetryTile(
                                 onRetry: _fetchMoreWallpapers,
@@ -240,6 +243,7 @@ class _AppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
       child: Row(
@@ -256,8 +260,8 @@ class _AppBar extends StatelessWidget {
                 Text(
                   'SILLY SMILE',
                   style: AppText.eyebrow(
-                    color: AppColors.bone,
-                    letterSpacing: 3.0,
+                    color: palette.bone,
+                    letterSpacing: 3,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -267,16 +271,13 @@ class _AppBar extends StatelessWidget {
                     size: 22,
                     letterSpacing: 1.8,
                     height: 1.0,
+                    color: palette.bone,
                   ),
                 ),
               ],
             ),
           ),
-          _IconChip(
-            icon: Icons.search_rounded,
-            badged: true,
-            onTap: () {},
-          ),
+          const _ThemeToggleButton(),
         ],
       ),
     );
@@ -284,23 +285,19 @@ class _AppBar extends StatelessWidget {
 }
 
 class _IconChip extends StatelessWidget {
-  const _IconChip({
-    required this.icon,
-    required this.onTap,
-    this.badged = false,
-  });
+  const _IconChip({required this.icon, required this.onTap});
 
   final IconData icon;
   final VoidCallback onTap;
-  final bool badged;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Material(
-      color: AppColors.obsidian,
+      color: palette.obsidian,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(50),
-        side: const BorderSide(color: AppColors.hairline),
+        side: BorderSide(color: palette.hairline),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(50),
@@ -308,24 +305,52 @@ class _IconChip extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(icon, color: AppColors.bone, size: 18),
-              if (badged)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppColors.crimson,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
+          child: Center(
+            child: Icon(icon, color: palette.bone, size: 18),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    final settings = context.watch<SettingsService>();
+    final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
+
+    return Material(
+      color: palette.obsidian,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(50),
+        side: BorderSide(color: palette.hairline),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(50),
+        onTap: () => settings.toggleLightDark(brightness),
+        onLongPress: () => settings.setThemeMode(AppThemeMode.system),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 260),
+            transitionBuilder: (child, animation) {
+              return RotationTransition(
+                turns: Tween<double>(begin: 0.7, end: 1).animate(animation),
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+            child: Icon(
+              isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+              key: ValueKey<bool>(isDark),
+              color: isDark ? palette.bone : AppColors.crimson,
+              size: 19,
+            ),
           ),
         ),
       ),
@@ -378,9 +403,10 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return RefreshIndicator.adaptive(
       color: AppColors.crimson,
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: palette.obsidian,
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -395,13 +421,17 @@ class _EmptyState extends StatelessWidget {
           Text(
             'NO WALLPAPERS YET',
             textAlign: TextAlign.center,
-            style: AppText.display(size: 24, letterSpacing: 2.4),
+            style: AppText.display(
+              size: 24,
+              letterSpacing: 2.4,
+              color: palette.bone,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Pull down to refresh the collection.',
             textAlign: TextAlign.center,
-            style: AppText.body(),
+            style: AppText.body(color: palette.ash),
           ),
         ],
       ),

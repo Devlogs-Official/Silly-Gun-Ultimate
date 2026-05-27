@@ -93,10 +93,19 @@ class AppText {
     );
   }
 
-  static TextTheme textTheme() {
+  static TextTheme textTheme() => darkTextTheme();
+
+  static TextTheme darkTextTheme() {
     return GoogleFonts.manropeTextTheme().apply(
       bodyColor: AppColors.bone,
       displayColor: AppColors.bone,
+    );
+  }
+
+  static TextTheme lightTextTheme() {
+    return GoogleFonts.manropeTextTheme().apply(
+      bodyColor: const Color(0xFF0A0A0E),
+      displayColor: const Color(0xFF0A0A0E),
     );
   }
 }

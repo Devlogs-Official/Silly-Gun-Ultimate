@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/wallpaper_model.dart';
 import '../../widgets/app_colors.dart';
+import '../../widgets/app_palette.dart';
 import '../../widgets/app_typography.dart';
 import '../../widgets/wallpaper_thumbnail_strip.dart';
 import 'static_full_preview.dart';
@@ -59,10 +60,11 @@ class _StaticPreviewScreenState extends State<StaticPreviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       appBar: AppBar(
-        backgroundColor: AppColors.ink,
+        backgroundColor: palette.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -83,7 +85,7 @@ class _StaticPreviewScreenState extends State<StaticPreviewScreen> {
             child: Center(
               child: Text(
                 '${(_selectedIndex + 1).toString().padLeft(2, '0')} / ${widget.wallpapers.length.toString().padLeft(2, '0')}',
-                style: AppText.mono(color: AppColors.bone),
+                style: AppText.mono(color: palette.bone),
               ),
             ),
           ),
@@ -133,6 +135,7 @@ class _PreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Hero(
       tag: 'wallpaper-${wallpaper.id}',
       child: Material(
@@ -144,13 +147,13 @@ class _PreviewCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.obsidian,
-                    border: Border.all(color: AppColors.hairline),
-                    boxShadow: const [
+                    color: palette.obsidian,
+                    border: Border.all(color: palette.hairline),
+                    boxShadow: [
                       BoxShadow(
-                        color: Color(0x66000000),
+                        color: Colors.black.withValues(alpha: 0.32),
                         blurRadius: 20,
-                        offset: Offset(0, 10),
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
@@ -161,9 +164,9 @@ class _PreviewCard extends StatelessWidget {
                         imageUrl: wallpaper.imageUrl,
                         fit: BoxFit.cover,
                         fadeInDuration: const Duration(milliseconds: 240),
-                        placeholder: (_, _) => const ColoredBox(
-                          color: AppColors.graphite,
-                          child: Center(
+                        placeholder: (_, _) => ColoredBox(
+                          color: palette.graphite,
+                          child: const Center(
                             child: SizedBox(
                               width: 24,
                               height: 24,
@@ -174,18 +177,17 @@ class _PreviewCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        errorWidget: (_, _, _) => const ColoredBox(
-                          color: AppColors.graphite,
+                        errorWidget: (_, _, _) => ColoredBox(
+                          color: palette.graphite,
                           child: Center(
                             child: Icon(
                               Icons.broken_image_outlined,
                               size: 42,
-                              color: AppColors.ash,
+                              color: palette.ash,
                             ),
                           ),
                         ),
                       ),
-                      // Crimson corner accent
                       Positioned(
                         top: 0,
                         left: 0,
@@ -218,7 +220,7 @@ class _PreviewCard extends StatelessWidget {
                 closedElevation: 0,
                 openElevation: 0,
                 closedColor: AppColors.crimson,
-                openColor: AppColors.ink,
+                openColor: palette.ink,
                 closedShape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(Radius.circular(2)),
                 ),
@@ -234,7 +236,7 @@ class _PreviewCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.fullscreen_rounded,
-                            color: AppColors.bone,
+                            color: Color(0xFFF5F1E8),
                             size: 18,
                           ),
                           const SizedBox(width: 10),
@@ -242,13 +244,13 @@ class _PreviewCard extends StatelessWidget {
                             'FULLSCREEN PREVIEW',
                             style: AppText.button(
                               size: 12.5,
-                              color: AppColors.bone,
+                              color: const Color(0xFFF5F1E8),
                             ),
                           ),
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.arrow_forward_rounded,
-                            color: AppColors.bone,
+                            color: Color(0xFFF5F1E8),
                             size: 16,
                           ),
                         ],

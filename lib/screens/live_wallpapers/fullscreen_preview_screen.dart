@@ -14,6 +14,7 @@ import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
 import '../../services/wallpaper_apply_service.dart';
 import '../../widgets/app_colors.dart';
+import '../../widgets/app_palette.dart';
 import '../../widgets/app_snackbar.dart';
 import '../../widgets/app_typography.dart';
 import '../../widgets/bottom_action_buttons.dart';
@@ -163,35 +164,38 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      barrierColor: const Color(0xCC000000),
-      builder: (_) => Center(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
-          decoration: BoxDecoration(
-            color: AppColors.obsidian,
-            borderRadius: BorderRadius.circular(2),
-            border: Border.all(color: AppColors.hairline),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                width: 28,
-                height: 28,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: AppColors.crimson,
+      barrierColor: const Color(0xAA000000),
+      builder: (ctx) {
+        final palette = ctx.palette;
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
+            decoration: BoxDecoration(
+              color: palette.obsidian,
+              borderRadius: BorderRadius.circular(2),
+              border: Border.all(color: palette.hairline),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: AppColors.crimson,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'APPLYING',
-                style: AppText.button(color: AppColors.bone, size: 12),
-              ),
-            ],
+                const SizedBox(height: 14),
+                Text(
+                  'APPLYING',
+                  style: AppText.button(color: palette.bone, size: 12),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -206,8 +210,9 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -216,8 +221,8 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
             imageUrl: widget.wallpaper.thumbnailUrl,
             fit: BoxFit.cover,
             fadeInDuration: const Duration(milliseconds: 200),
-            placeholder: (_, _) => const ColoredBox(color: AppColors.graphite),
-            errorWidget: (_, _, _) => const ColoredBox(color: AppColors.ink),
+            placeholder: (_, _) => ColoredBox(color: palette.graphite),
+            errorWidget: (_, _, _) => ColoredBox(color: palette.ink),
           ),
 
           // 2. Video plays over the thumbnail once ready
@@ -235,7 +240,64 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
               ),
             ),
 
-          // 3. Loading hint or error state
+          // 3. Top gradient for badge legibility
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.55),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 4. Close button + app-name badge row
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 12,
+            left: 16,
+            right: 16,
+            child: Row(
+              children: [
+                Material(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(50),
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFFF5F1E8),
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: _AppNameBadge()),
+              ],
+            ),
+          ),
+
+          // 5. Loading hint or error state
           if (!_ready)
             Positioned(
               left: 0,
@@ -247,32 +309,6 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
                     : const _LoadingPill(),
               ),
             ),
-
-          // 4. Close button
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 12,
-            left: 16,
-            child: Material(
-              color: AppColors.ink.withValues(alpha: 0.6),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(50)),
-                side: BorderSide(color: AppColors.hairline),
-              ),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(50),
-                onTap: () => Navigator.of(context).pop(),
-                child: const SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: AppColors.bone,
-                    size: 18,
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
       bottomNavigationBar: BottomActionButtons(
@@ -286,6 +322,57 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
   }
 }
 
+class _AppNameBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 14, 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(2),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 4,
+            height: 28,
+            color: AppColors.crimson,
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'PREVIEW · LIVE',
+                  style: AppText.mono(
+                    size: 8.5,
+                    color: AppColors.crimson,
+                    weight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  AppConstants.appName.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.button(
+                    size: 11.5,
+                    color: const Color(0xFFF5F1E8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LoadingPill extends StatelessWidget {
   const _LoadingPill();
 
@@ -294,9 +381,9 @@ class _LoadingPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.ink.withValues(alpha: 0.7),
+        color: Colors.black.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: AppColors.hairline),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -312,7 +399,10 @@ class _LoadingPill extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             'LOADING MOTION',
-            style: AppText.mono(size: 10.5, color: AppColors.bone),
+            style: AppText.mono(
+              size: 10.5,
+              color: const Color(0xFFF5F1E8),
+            ),
           ),
         ],
       ),
@@ -343,12 +433,15 @@ class _ErrorPill extends StatelessWidget {
               const Icon(
                 Icons.refresh_rounded,
                 size: 16,
-                color: AppColors.bone,
+                color: Color(0xFFF5F1E8),
               ),
               const SizedBox(width: 8),
               Text(
                 'RETRY MOTION',
-                style: AppText.button(size: 11, color: AppColors.bone),
+                style: AppText.button(
+                  size: 11,
+                  color: const Color(0xFFF5F1E8),
+                ),
               ),
             ],
           ),

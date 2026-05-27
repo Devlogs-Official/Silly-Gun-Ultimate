@@ -7,6 +7,7 @@ import '../providers/favorites_provider.dart';
 import '../providers/wallpaper_provider.dart';
 import '../services/settings_service.dart';
 import '../widgets/app_colors.dart';
+import '../widgets/app_palette.dart';
 import '../widgets/app_snackbar.dart';
 import '../widgets/app_typography.dart';
 import '../widgets/section_label.dart';
@@ -16,45 +17,50 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.ink,
+      backgroundColor: palette.ink,
       appBar: AppBar(
-        backgroundColor: AppColors.ink,
+        backgroundColor: palette.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back_rounded),
-          color: AppColors.bone,
+          color: palette.bone,
         ),
         titleSpacing: 0,
         title: Text(
           'SETTINGS',
-          style: AppText.button(color: AppColors.bone, size: 13),
+          style: AppText.button(color: palette.bone, size: 13),
         ),
       ),
       body: SafeArea(
         top: false,
         child: ListView(
           padding: const EdgeInsets.fromLTRB(22, 16, 22, 40),
-          children: [
-            const SectionLabel(
+          children: const [
+            SectionLabel(
               eyebrow: 'PREFERENCES',
               headline: 'CONTROL',
-              trailing: '03 GROUPS',
+              trailing: '04 GROUPS',
             ),
-            const SizedBox(height: 22),
-            _GroupLabel('01 · APPLY TARGET'),
-            const SizedBox(height: 10),
-            const _ApplyTargetCard(),
-            const SizedBox(height: 26),
-            _GroupLabel('02 · STORAGE'),
-            const SizedBox(height: 10),
-            const _StorageCard(),
-            const SizedBox(height: 26),
-            _GroupLabel('03 · INFO'),
-            const SizedBox(height: 10),
-            const _AboutCard(),
+            SizedBox(height: 22),
+            _GroupLabel('01 · APPEARANCE'),
+            SizedBox(height: 10),
+            _ThemeCard(),
+            SizedBox(height: 26),
+            _GroupLabel('02 · APPLY TARGET'),
+            SizedBox(height: 10),
+            _ApplyTargetCard(),
+            SizedBox(height: 26),
+            _GroupLabel('03 · STORAGE'),
+            SizedBox(height: 10),
+            _StorageCard(),
+            SizedBox(height: 26),
+            _GroupLabel('04 · INFO'),
+            SizedBox(height: 10),
+            _AboutCard(),
           ],
         ),
       ),
@@ -71,7 +77,10 @@ class _GroupLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 4),
-      child: Text(text, style: AppText.mono(size: 10, color: AppColors.smoke)),
+      child: Text(
+        text,
+        style: AppText.mono(size: 10, color: context.palette.smoke),
+      ),
     );
   }
 }
@@ -83,13 +92,129 @@ class _CardShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.obsidian,
+        color: palette.obsidian,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.hairline),
+        border: Border.all(color: palette.hairline),
       ),
       child: child,
+    );
+  }
+}
+
+class _ThemeCard extends StatelessWidget {
+  const _ThemeCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsService>();
+    final current = settings.themeMode;
+    final palette = context.palette;
+    return _CardShell(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'THEME MODE',
+              style: AppText.button(color: palette.bone, size: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Switch the gallery between light and dark.',
+              style: AppText.body(size: 13, color: palette.ash),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _ThemeChip(
+                    icon: Icons.light_mode_rounded,
+                    label: 'LIGHT',
+                    selected: current == AppThemeMode.light,
+                    onTap: () => settings.setThemeMode(AppThemeMode.light),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ThemeChip(
+                    icon: Icons.dark_mode_rounded,
+                    label: 'DARK',
+                    selected: current == AppThemeMode.dark,
+                    onTap: () => settings.setThemeMode(AppThemeMode.dark),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _ThemeChip(
+                    icon: Icons.brightness_auto_rounded,
+                    label: 'SYSTEM',
+                    selected: current == AppThemeMode.system,
+                    onTap: () => settings.setThemeMode(AppThemeMode.system),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeChip extends StatelessWidget {
+  const _ThemeChip({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Material(
+      color: selected ? AppColors.crimson : palette.graphite,
+      borderRadius: BorderRadius.circular(2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(2),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: selected ? AppColors.crimson : palette.hairline,
+            ),
+            borderRadius: BorderRadius.circular(2),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: selected ? const Color(0xFFF5F1E8) : palette.bone,
+                size: 20,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: AppText.button(
+                  color:
+                      selected ? const Color(0xFFF5F1E8) : palette.ash,
+                  size: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -101,7 +226,7 @@ class _ApplyTargetCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsService>();
     final current = settings.applyTarget;
-
+    final palette = context.palette;
     return _CardShell(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
@@ -110,12 +235,12 @@ class _ApplyTargetCard extends StatelessWidget {
           children: [
             Text(
               'WHERE TO APPLY',
-              style: AppText.button(color: AppColors.bone, size: 13),
+              style: AppText.button(color: palette.bone, size: 13),
             ),
             const SizedBox(height: 4),
             Text(
               'Choose the default surface for new wallpapers.',
-              style: AppText.body(size: 13),
+              style: AppText.body(size: 13, color: palette.ash),
             ),
             const SizedBox(height: 16),
             Row(
@@ -170,8 +295,9 @@ class _ApplyTargetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return Material(
-      color: selected ? AppColors.crimson : AppColors.graphite,
+      color: selected ? AppColors.crimson : palette.graphite,
       borderRadius: BorderRadius.circular(2),
       child: InkWell(
         borderRadius: BorderRadius.circular(2),
@@ -179,7 +305,7 @@ class _ApplyTargetChip extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: selected ? AppColors.crimson : AppColors.hairline,
+              color: selected ? AppColors.crimson : palette.hairline,
             ),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -188,14 +314,15 @@ class _ApplyTargetChip extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: selected ? AppColors.bone : AppColors.bone,
+                color: selected ? const Color(0xFFF5F1E8) : palette.bone,
                 size: 20,
               ),
               const SizedBox(height: 8),
               Text(
                 label,
                 style: AppText.button(
-                  color: selected ? AppColors.bone : AppColors.ash,
+                  color:
+                      selected ? const Color(0xFFF5F1E8) : palette.ash,
                   size: 11,
                 ),
               ),
@@ -257,17 +384,18 @@ class _StorageCard extends StatelessWidget {
     required String message,
     required String confirmLabel,
   }) async {
+    final palette = context.palette;
     final result = await showDialog<bool>(
       context: context,
-      barrierColor: const Color(0xCC000000),
+      barrierColor: const Color(0xAA000000),
       builder: (ctx) {
         return Dialog(
-          backgroundColor: AppColors.obsidian,
+          backgroundColor: palette.obsidian,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
-            side: const BorderSide(color: AppColors.hairline),
+            side: BorderSide(color: palette.hairline),
           ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
@@ -285,10 +413,14 @@ class _StorageCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   title,
-                  style: AppText.display(size: 26, letterSpacing: 1.2),
+                  style: AppText.display(
+                    size: 26,
+                    letterSpacing: 1.2,
+                    color: palette.bone,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(message, style: AppText.body()),
+                Text(message, style: AppText.body(color: palette.ash)),
                 const SizedBox(height: 22),
                 Row(
                   children: [
@@ -327,7 +459,7 @@ class _StorageCard extends StatelessWidget {
             subtitle: 'Free up space. Favorites are kept.',
             onTap: () => _clearCache(context),
           ),
-          const Divider(height: 1, color: AppColors.hairline),
+          Divider(height: 1, color: context.palette.hairline),
           _ActionTile(
             icon: Icons.favorite_outline_rounded,
             title: 'CLEAR FAVORITES',
@@ -345,6 +477,7 @@ class _AboutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return _CardShell(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
@@ -362,7 +495,7 @@ class _AboutCard extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.bolt_rounded,
-                    color: AppColors.bone,
+                    color: Color(0xFFF5F1E8),
                     size: 22,
                   ),
                 ),
@@ -374,14 +507,14 @@ class _AboutCard extends StatelessWidget {
                       Text(
                         AppConstants.appName.toUpperCase(),
                         style: AppText.button(
-                          color: AppColors.bone,
+                          color: palette.bone,
                           size: 13,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'VERSION ${AppConstants.appVersion} · BUILD 02',
-                        style: AppText.mono(color: AppColors.ash, size: 10.5),
+                        style: AppText.mono(color: palette.ash, size: 10.5),
                       ),
                     ],
                   ),
@@ -389,11 +522,11 @@ class _AboutCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 18),
-            Container(height: 1, color: AppColors.hairline),
+            Container(height: 1, color: palette.hairline),
             const SizedBox(height: 14),
             Text(
               'Curated wallpapers. Crafted by DevLogs.',
-              style: AppText.body(size: 13),
+              style: AppText.body(size: 13, color: palette.ash),
             ),
           ],
         ),
@@ -417,6 +550,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -427,9 +561,9 @@ class _ActionTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.graphite,
+                color: palette.graphite,
                 borderRadius: BorderRadius.circular(2),
-                border: Border.all(color: AppColors.hairline),
+                border: Border.all(color: palette.hairline),
               ),
               child: Icon(icon, color: AppColors.crimson, size: 18),
             ),
@@ -440,16 +574,16 @@ class _ActionTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppText.button(color: AppColors.bone, size: 12),
+                    style: AppText.button(color: palette.bone, size: 12),
                   ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppText.body(size: 12.5)),
+                  Text(subtitle, style: AppText.body(size: 12.5, color: palette.ash)),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_rounded,
-              color: AppColors.ash,
+              color: palette.ash,
               size: 16,
             ),
           ],
