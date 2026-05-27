@@ -6,9 +6,12 @@ import 'package:silly_gun_ultimate/screens/live_wallpapers/wallpaper_preview_scr
 import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
+import '../../widgets/app_colors.dart';
 import '../../widgets/app_snackbar.dart';
+import '../../widgets/app_typography.dart';
 import '../../widgets/no_internet_widget.dart';
 import '../../widgets/retry_widget.dart';
+import '../../widgets/section_label.dart';
 import '../../widgets/shimmer_grid.dart';
 import '../../widgets/wallpaper_grid_item.dart';
 
@@ -26,7 +29,6 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
   void initState() {
     super.initState();
     _scrollController = ScrollController()..addListener(_onScroll);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _fetchInitial();
@@ -46,7 +48,6 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
       }
       return;
     }
-
     await provider.fetchInitialWallpapers();
   }
 
@@ -54,13 +55,11 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
     final connectivity = context.read<ConnectivityService>();
     final hasInternet = await connectivity.refresh();
     if (!mounted) return;
-
     if (!hasInternet) {
       AppSnackbar.internet('You are offline. Showing cached wallpapers.');
       context.read<WallpaperProvider>().restoreCachedWallpapers();
       return;
     }
-
     await context.read<WallpaperProvider>().refreshWallpapers();
   }
 
@@ -69,19 +68,16 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
     if (provider.isLoading || provider.isLoadingMore || !provider.hasMore) {
       return;
     }
-
     final connectivity = context.read<ConnectivityService>();
     if (!connectivity.hasInternet && !(await connectivity.refresh())) {
       AppSnackbar.internet('Connect to the internet to load more wallpapers.');
       return;
     }
-
     await provider.fetchMoreWallpapers();
   }
 
   void _onScroll() {
     if (!_scrollController.hasClients) return;
-
     final position = _scrollController.position;
     if (position.pixels >= position.maxScrollExtent - 600) {
       _fetchMoreWallpapers();
@@ -99,114 +95,147 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Live Wallpapers'),
-        centerTitle: true,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        backgroundColor: Color(0xFFB00020),
-        foregroundColor: Colors.white,
-      ),
-      body: Consumer2<WallpaperProvider, ConnectivityService>(
-        builder: (context, provider, connectivity, _) {
-          final noData = provider.wallpapers.isEmpty;
-          if (provider.isLoading && noData) return const ShimmerGrid();
+      backgroundColor: AppColors.ink,
+      body: SafeArea(
+        bottom: false,
+        child: Consumer2<WallpaperProvider, ConnectivityService>(
+          builder: (context, provider, connectivity, _) {
+            final favorites = context.watch<FavoritesProvider>();
+            final noData = provider.wallpapers.isEmpty;
 
-          if (!connectivity.hasInternet && noData) {
-            return NoInternetWidget(onRetry: _fetchInitial);
-          }
+            if (provider.isLoading && noData) {
+              return const _BodyWithHeader(child: ShimmerGrid());
+            }
 
-          if (provider.errorMessage != null && noData) {
-            return RetryWidget(
-              message: provider.errorMessage!,
-              onRetry: _fetchInitial,
-            );
-          }
+            if (!connectivity.hasInternet && noData) {
+              return NoInternetWidget(onRetry: _fetchInitial);
+            }
 
-          if (!provider.isLoading && noData) {
-            return _EmptyState(onRefresh: _refreshWallpapers);
-          }
+            if (provider.errorMessage != null && noData) {
+              return RetryWidget(
+                message: provider.errorMessage!,
+                onRetry: _fetchInitial,
+              );
+            }
 
-          return Column(
-            children: [
-              if (!connectivity.hasInternet) const _OfflineBanner(),
-              Expanded(
-                child: _WallpaperGrid(
-                  scrollController: _scrollController,
-                  onRefresh: _refreshWallpapers,
+            if (!provider.isLoading && noData) {
+              return _EmptyState(onRefresh: _refreshWallpapers);
+            }
+
+            return RefreshIndicator.adaptive(
+              color: AppColors.crimson,
+              backgroundColor: AppColors.obsidian,
+              onRefresh: _refreshWallpapers,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
                 ),
+                slivers: [
+                  const SliverToBoxAdapter(child: _Header()),
+                  if (!connectivity.hasInternet)
+                    const SliverToBoxAdapter(child: _OfflineBanner()),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(22, 6, 22, 18),
+                    sliver: SliverToBoxAdapter(
+                      child: SectionLabel(
+                        eyebrow: 'LIVE FEED',
+                        headline: 'MOTION',
+                        trailing:
+                            '${provider.wallpapers.length.toString().padLeft(2, '0')} LIVE',
+                      ),
+                    ),
+                  ),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                    sliver: SliverToBoxAdapter(
+                      child: MasonryGridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 14,
+                        crossAxisSpacing: 14,
+                        itemCount:
+                            provider.wallpapers.length +
+                                (provider.isLoadingMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= provider.wallpapers.length) {
+                            return const _BottomLoader();
+                          }
+                          final wallpaper = provider.wallpapers[index];
+                          return WallpaperGridItem(
+                            key: ValueKey(wallpaper.id),
+                            wallpaper: wallpaper,
+                            index: index,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => WallpaperPreviewScreen(
+                                    wallpaper: wallpaper,
+                                    wallpapers: provider.wallpapers,
+                                    initialIndex: index,
+                                  ),
+                                ),
+                              );
+                            },
+                            isFavorite: favorites.isFavorite(wallpaper),
+                            onFavoriteToggle: () =>
+                                favorites.toggleFavorite(wallpaper),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-class _WallpaperGrid extends StatelessWidget {
-  const _WallpaperGrid({
-    required this.scrollController,
-    required this.onRefresh,
-  });
+class _BodyWithHeader extends StatelessWidget {
+  const _BodyWithHeader({required this.child});
 
-  final ScrollController scrollController;
-  final Future<void> Function() onRefresh;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final FavoritesProvider favoritesProvider = context
-        .watch<FavoritesProvider>();
-    return RefreshIndicator.adaptive(
-      color: const Color(0xFF8FE3CF),
-      backgroundColor: const Color(0xFF161B24),
-      onRefresh: onRefresh,
-      child: Selector<WallpaperProvider, int>(
-        selector: (_, provider) =>
-            provider.wallpapers.length + (provider.isLoadingMore ? 1 : 0),
-        builder: (context, itemCount, _) {
-          return MasonryGridView.count(
-            controller: scrollController,
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-            crossAxisCount: 2,
-            mainAxisSpacing: 14,
-            crossAxisSpacing: 14,
-            itemCount: itemCount,
-            itemBuilder: (context, index) {
-              final provider = context.read<WallpaperProvider>();
-              if (index >= provider.wallpapers.length) {
-                return const _BottomLoader();
-              }
+    return Column(
+      children: [
+        const _Header(),
+        Expanded(child: child),
+      ],
+    );
+  }
+}
 
-              return WallpaperGridItem(
-                key: ValueKey(provider.wallpapers[index].id),
-                wallpaper: provider.wallpapers[index],
-                index: index,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => WallpaperPreviewScreen(
-                        wallpaper: provider.wallpapers[index],
-                        wallpapers: provider.wallpapers,
-                        initialIndex: index,
-                      ),
-                    ),
-                  );
-                },
-                isFavorite: favoritesProvider.isFavorite(
-                  provider.wallpapers[index],
-                ),
-                onFavoriteToggle: () {
-                  favoritesProvider.toggleFavorite(provider.wallpapers[index]);
-                },
-              );
-            },
-          );
-        },
+class _Header extends StatelessWidget {
+  const _Header();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
+      child: Row(
+        children: [
+          Container(width: 22, height: 2, color: AppColors.crimson),
+          const SizedBox(width: 10),
+          Text('CHANNEL · 02', style: AppText.eyebrow()),
+          const Spacer(),
+          Text('LIVE', style: AppText.mono(color: AppColors.bone)),
+          const SizedBox(width: 8),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: AppColors.crimson,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -221,12 +250,9 @@ class _BottomLoader extends StatelessWidget {
       height: 96,
       child: Center(
         child: SizedBox(
-          width: 26,
-          height: 26,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.6,
-            color: Color(0xFF8FE3CF),
-          ),
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(strokeWidth: 2.4),
         ),
       ),
     );
@@ -241,26 +267,29 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator.adaptive(
-      color: const Color(0xFF8FE3CF),
-      backgroundColor: const Color(0xFF161B24),
+      color: AppColors.crimson,
+      backgroundColor: AppColors.obsidian,
       onRefresh: onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.26),
           const Icon(
-            Icons.wallpaper_rounded,
-            color: Color(0xFF8FE3CF),
+            Icons.movie_outlined,
+            color: AppColors.crimson,
             size: 52,
           ),
           const SizedBox(height: 16),
           Text(
-            'No wallpapers found',
+            'NOTHING LIVE YET',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppText.display(size: 24, letterSpacing: 2.4),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Pull down to refresh.',
+            textAlign: TextAlign.center,
+            style: AppText.body(),
           ),
         ],
       ),
@@ -275,25 +304,29 @@ class _OfflineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        color: Color(0xFF151A22),
-        border: Border(bottom: BorderSide(color: Color(0x1FFFFFFF))),
+      margin: const EdgeInsets.fromLTRB(22, 8, 22, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.obsidian,
+        borderRadius: BorderRadius.circular(2),
+        border: const Border(
+          left: BorderSide(color: AppColors.crimson, width: 2),
+        ),
       ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Icon(Icons.cloud_off_rounded, color: Color(0xFFFFC857), size: 18),
-          SizedBox(width: 8),
-          Flexible(
+          const Icon(
+            Icons.cloud_off_rounded,
+            color: AppColors.crimson,
+            size: 16,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
             child: Text(
-              'You are viewing cached wallpapers',
-              maxLines: 1,
+              'Offline · Showing cached wallpapers',
+              style: AppText.body(color: AppColors.bone, size: 12.5),
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: Color(0xFFFFE4A3),
-                fontWeight: FontWeight.w800,
-              ),
+              maxLines: 1,
             ),
           ),
         ],

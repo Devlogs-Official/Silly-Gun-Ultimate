@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../models/wallpaper_model.dart';
+import 'app_colors.dart';
+import 'app_typography.dart';
 
 class WallpaperGridItem extends StatelessWidget {
   const WallpaperGridItem({
@@ -23,116 +25,123 @@ class WallpaperGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double height = index.isEven ? 250 : 320;
+    final double height = index.isEven ? 240 : 320;
 
     return Hero(
       tag: 'wallpaper-${wallpaper.id}',
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(4),
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
             height: height,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: <BoxShadow>[
+              color: AppColors.obsidian,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: AppColors.hairline),
+              boxShadow: const [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
+                  color: Color(0x55000000),
                   blurRadius: 18,
-                  offset: const Offset(0, 10),
+                  offset: Offset(0, 10),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(4),
               child: Stack(
                 fit: StackFit.expand,
-                children: <Widget>[
+                children: [
                   CachedNetworkImage(
                     imageUrl: wallpaper.thumbnailUrl,
                     fit: BoxFit.cover,
                     fadeInDuration: const Duration(milliseconds: 260),
-                    placeholder: (context, url) => const _ImageSkeleton(),
-                    errorWidget: (context, url, error) => const _ImageError(),
+                    placeholder: (_, _) => const _ImageSkeleton(),
+                    errorWidget: (_, _, _) => const _ImageError(),
                   ),
 
+                  // Subtle vertical gradient
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: <Color>[
+                          colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.08),
-                            Colors.black.withValues(alpha: 0.62),
+                            AppColors.ink.withValues(alpha: 0.55),
                           ],
-                          stops: const <double>[0.45, 0.72, 1],
+                          stops: const [0.5, 1],
                         ),
                       ),
                     ),
                   ),
 
+                  // Index badge — bottom-left
                   Positioned(
-                    top: 12,
-                    right: 12,
+                    left: 10,
+                    bottom: 10,
+                    child: Text(
+                      (index + 1).toString().padLeft(2, '0'),
+                      style: AppText.mono(
+                        size: 11,
+                        color: AppColors.bone,
+                      ),
+                    ),
+                  ),
+
+                  // Live badge — bottom-right
+                  if (showTypeBadge && wallpaper.isLive)
+                    Positioned(
+                      right: 10,
+                      bottom: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.crimson,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 5,
+                              height: 5,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: AppColors.bone,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'LIVE',
+                              style: AppText.mono(
+                                size: 9,
+                                color: AppColors.bone,
+                                weight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Favorite — top-right
+                  Positioned(
+                    top: 10,
+                    right: 10,
                     child: _FavoriteButton(
                       isFavorite: isFavorite,
                       onTap: onFavoriteToggle,
                     ),
                   ),
-
-                  if (showTypeBadge && wallpaper.isLive)
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: 12,
-                      child: Row(
-                        children: <Widget>[
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.15),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                Icon(
-                                  wallpaper.isLive
-                                      ? Icons.play_circle_fill_rounded
-                                      : null,
-                                  color: Colors.white,
-                                  size: 17,
-                                ),
-                                const SizedBox(width: 6),
-                                if (wallpaper.isLive)
-                                  Text(
-                                    'Live',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: 0.5,
-                                          fontSize: 12,
-                                        ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -157,25 +166,24 @@ class _FavoriteButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(100),
         onTap: onTap,
         child: Ink(
-          width: 42,
-          height: 42,
+          width: 36,
+          height: 36,
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.32),
+            color: AppColors.ink.withValues(alpha: 0.6),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            border: Border.all(color: AppColors.hairline),
           ),
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
-            transitionBuilder: (child, animation) {
-              return ScaleTransition(scale: animation, child: child);
-            },
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
             child: Icon(
               isFavorite
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
               key: ValueKey<bool>(isFavorite),
-              color: isFavorite ? const Color(0xFFFF5C8A) : Colors.white,
-              size: 22,
+              color: isFavorite ? AppColors.crimson : AppColors.bone,
+              size: 18,
             ),
           ),
         ),
@@ -189,21 +197,15 @@ class _ImageSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[const Color(0xFFFFD1DC), const Color(0xFFFFB3C7)],
-        ),
-      ),
-      child: const Center(
+    return const ColoredBox(
+      color: AppColors.graphite,
+      child: Center(
         child: SizedBox(
-          width: 26,
-          height: 26,
+          width: 18,
+          height: 18,
           child: CircularProgressIndicator(
-            strokeWidth: 2.4,
-            color: Colors.white,
+            strokeWidth: 2,
+            color: AppColors.crimson,
           ),
         ),
       ),
@@ -217,12 +219,12 @@ class _ImageError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const ColoredBox(
-      color: Color(0xFFFFE6EC),
+      color: AppColors.graphite,
       child: Center(
         child: Icon(
           Icons.broken_image_outlined,
-          color: Color(0xFFFF7597),
-          size: 34,
+          color: AppColors.ash,
+          size: 28,
         ),
       ),
     );

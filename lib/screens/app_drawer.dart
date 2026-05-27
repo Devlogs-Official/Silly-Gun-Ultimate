@@ -4,7 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core/app_constants.dart';
 import '../widgets/app_colors.dart';
-import '../widgets/app_snackbar.dart';
+import '../widgets/app_typography.dart';
+import 'policy_screen.dart';
+import 'settings_screen.dart';
 
 class ModernDrawer extends StatelessWidget {
   const ModernDrawer({super.key});
@@ -25,246 +27,221 @@ class ModernDrawer extends StatelessWidget {
     }
   }
 
-  Future<void> _openInAppPage(BuildContext context, String url) async {
+  void _openSettings(BuildContext context) {
     Navigator.pop(context);
-
-    final bool opened = await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.inAppBrowserView,
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
     );
+  }
 
-    if (!opened) {
-      AppSnackbar.error('Unable to open this page. Please try again.');
-    }
+  void _openPolicy(
+    BuildContext context, {
+    required String title,
+    required String url,
+  }) {
+    Navigator.pop(context);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PolicyScreen(title: title, url: url),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: AppColors.background,
-      child: Column(
-        children: [
-          /// HEADER
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(24, 70, 24, 30),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary,
-                  AppColors.primary.withValues(alpha: 0.82),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(34),
-                bottomRight: Radius.circular(34),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: SizedBox(
-                    height: 68,
-                    width: 68,
-                    child: Image.asset(
-                      'assets/utils/icon.png',
-                      fit: BoxFit.cover,
+      backgroundColor: AppColors.ink,
+      width: MediaQuery.sizeOf(context).width * 0.84,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(2),
+          bottomRight: Radius.circular(2),
+        ),
+        side: BorderSide(color: AppColors.hairline),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 18, 18, 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(width: 22, height: 2, color: AppColors.crimson),
+                            const SizedBox(width: 10),
+                            Text('MENU · 01', style: AppText.eyebrow()),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'SILLY',
+                          style: AppText.display(size: 44, height: 0.88),
+                        ),
+                        Text(
+                          'SMILE.',
+                          style: AppText.display(
+                            size: 44,
+                            height: 0.88,
+                            color: AppColors.crimson,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-
-                const SizedBox(width: 18),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'Silly Smile',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.obsidian,
+                      foregroundColor: AppColors.bone,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                        side: const BorderSide(color: AppColors.hairline),
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Stylish wallpapers for your device',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                      minimumSize: const Size(42, 42),
+                    ),
+                    icon: const Icon(Icons.close_rounded, size: 18),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          const SizedBox(height: 25),
+            const SizedBox(height: 24),
 
-          /// MENU ITEMS
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _ModernTile(
-                  icon: Icons.share_rounded,
-                  title: 'Share App',
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await SharePlus.instance.share(
-                      ShareParams(text: AppConstants.shareMessage),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 14),
-
-                _ModernTile(
-                  icon: Icons.star_rate_rounded,
-                  title: 'Rate App',
-                  onTap: () => _openRateApp(context),
-                ),
-
-                const SizedBox(height: 14),
-
-                _ModernTile(
-                  icon: Icons.verified_user_outlined,
-                  title: 'Privacy Policy',
-                  onTap: () =>
-                      _openInAppPage(context, AppConstants.privacyPolicyUrl),
-                ),
-
-                const SizedBox(height: 14),
-
-                _ModernTile(
-                  icon: Icons.article_outlined,
-                  title: 'Terms & Conditions',
-                  onTap: () => _openInAppPage(
-                    context,
-                    AppConstants.termsAndConditionsUrl,
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _DrawerTile(
+                    index: '01',
+                    icon: Icons.tune_rounded,
+                    label: 'SETTINGS',
+                    onTap: () => _openSettings(context),
                   ),
-                ),
-              ],
+                  _DrawerTile(
+                    index: '02',
+                    icon: Icons.share_rounded,
+                    label: 'SHARE APP',
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await SharePlus.instance.share(
+                        ShareParams(text: AppConstants.shareMessage),
+                      );
+                    },
+                  ),
+                  _DrawerTile(
+                    index: '03',
+                    icon: Icons.star_rate_rounded,
+                    label: 'RATE ON STORE',
+                    onTap: () => _openRateApp(context),
+                  ),
+                  _DrawerTile(
+                    index: '04',
+                    icon: Icons.shield_outlined,
+                    label: 'PRIVACY POLICY',
+                    onTap: () => _openPolicy(
+                      context,
+                      title: 'Privacy Policy',
+                      url: AppConstants.privacyPolicyUrl,
+                    ),
+                  ),
+                  _DrawerTile(
+                    index: '05',
+                    icon: Icons.article_outlined,
+                    label: 'TERMS & CONDITIONS',
+                    onTap: () => _openPolicy(
+                      context,
+                      title: 'Terms & Conditions',
+                      url: AppConstants.termsAndConditionsUrl,
+                    ),
+                    isLast: true,
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          const Spacer(),
-
-          /// FOOTER
-          Padding(
-            padding: const EdgeInsets.only(bottom: 26),
-            child: Column(
-              children: [
-                Container(
-                  height: 5,
-                  width: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(100),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 14, 24, 22),
+              child: Row(
+                children: [
+                  Container(width: 22, height: 2, color: AppColors.crimson),
+                  const SizedBox(width: 10),
+                  Text(
+                    'VERSION ${AppConstants.appVersion}',
+                    style: AppText.mono(size: 10, color: AppColors.smoke),
                   ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Text(
-                  'Version 1.0.0',
-                  style: TextStyle(
-                    color: AppColors.textSecondary.withValues(alpha: 0.7),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                  const Spacer(),
+                  Text(
+                    '© DEVLOGS',
+                    style: AppText.mono(size: 10, color: AppColors.smoke),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ModernTile extends StatelessWidget {
-  const _ModernTile({
+class _DrawerTile extends StatelessWidget {
+  const _DrawerTile({
+    required this.index,
     required this.icon,
-    required this.title,
+    required this.label,
     required this.onTap,
+    this.isLast = false,
   });
 
+  final String index;
   final IconData icon;
-  final String title;
+  final String label;
   final VoidCallback onTap;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isLast ? Colors.transparent : AppColors.hairline,
+            ),
           ),
-          child: Row(
-            children: [
-              /// ICON CONTAINER
-              Container(
-                height: 52,
-                width: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: AppColors.primary, size: 26),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 36,
+              child: Text(
+                index,
+                style: AppText.mono(size: 11, color: AppColors.crimson),
               ),
-
-              const SizedBox(width: 16),
-
-              /// TITLE
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+            ),
+            Icon(icon, color: AppColors.bone, size: 20),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: AppText.button(color: AppColors.bone, size: 14),
               ),
-
-              /// ARROW
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppColors.textSecondary.withValues(alpha: 0.6),
-                size: 18,
-              ),
-            ],
-          ),
+            ),
+            const Icon(
+              Icons.arrow_outward_rounded,
+              color: AppColors.ash,
+              size: 18,
+            ),
+          ],
         ),
       ),
     );

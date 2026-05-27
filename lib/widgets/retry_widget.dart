@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+import 'app_typography.dart';
+
 class RetryWidget extends StatelessWidget {
   const RetryWidget({
     super.key,
     required this.message,
     required this.onRetry,
-    this.title = 'Something went wrong',
+    this.title = 'SOMETHING WENT WRONG',
     this.isRetrying = false,
   });
 
@@ -18,44 +21,59 @@ class RetryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(30),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.refresh_rounded,
-              color: Color(0xFF8FE3CF),
-              size: 48,
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: AppColors.obsidian,
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: AppColors.hairline),
+              ),
+              child: const Icon(
+                Icons.refresh_rounded,
+                color: AppColors.crimson,
+                size: 32,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 22),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 22, height: 2, color: AppColors.crimson),
+                const SizedBox(width: 10),
+                Text('ERROR', style: AppText.eyebrow()),
+              ],
+            ),
+            const SizedBox(height: 12),
             Text(
-              title,
+              title.toUpperCase(),
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
+              style: AppText.display(size: 28, letterSpacing: 1.4),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFFB8C1D1),
-                    height: 1.35,
-                  ),
+              style: AppText.body(),
             ),
             const SizedBox(height: 22),
             FilledButton.icon(
               onPressed: isRetrying ? null : onRetry,
               icon: isRetrying
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
+                      width: 16,
+                      height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
+                  : const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('TRY AGAIN'),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(220, 52),
+              ),
             ),
           ],
         ),

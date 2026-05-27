@@ -10,8 +10,11 @@ import 'providers/wallpaper_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'screens/splash_screen.dart';
 import 'services/connectivity_service.dart';
+import 'services/settings_service.dart';
 import 'services/wallpaper_cache_service.dart';
+import 'widgets/app_colors.dart';
 import 'widgets/app_snackbar.dart';
+import 'widgets/app_typography.dart';
 
 Future<void> main() async {
   await runZonedGuarded<Future<void>>(
@@ -21,11 +24,10 @@ Future<void> main() async {
       SystemChrome.setSystemUIOverlayStyle(
         const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          statusBarBrightness: Brightness.light,
-
-          systemNavigationBarColor: Colors.white,
-          systemNavigationBarIconBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+          systemNavigationBarColor: AppColors.ink,
+          systemNavigationBarIconBrightness: Brightness.light,
         ),
       );
 
@@ -43,10 +45,14 @@ Future<void> main() async {
       final connectivityService = ConnectivityService();
       await connectivityService.initialize();
 
+      final settingsService = SettingsService();
+      await settingsService.load();
+
       runApp(
         SillyGunWallpapersApp(
           cacheService: cacheService,
           connectivityService: connectivityService,
+          settingsService: settingsService,
         ),
       );
     },
@@ -59,10 +65,12 @@ class SillyGunWallpapersApp extends StatelessWidget {
     super.key,
     required this.cacheService,
     required this.connectivityService,
+    required this.settingsService,
   });
 
   final WallpaperCacheService cacheService;
   final ConnectivityService connectivityService;
+  final SettingsService settingsService;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +79,7 @@ class SillyGunWallpapersApp extends StatelessWidget {
         ChangeNotifierProvider<ConnectivityService>(
           create: (_) => connectivityService,
         ),
+        ChangeNotifierProvider<SettingsService>.value(value: settingsService),
         ChangeNotifierProvider(
           create: (_) => WallpaperProvider(cacheService: cacheService),
         ),
@@ -82,38 +91,94 @@ class SillyGunWallpapersApp extends StatelessWidget {
         navigatorKey: ErrorHandler.navigatorKey,
         scaffoldMessengerKey: AppSnackbar.messengerKey,
         debugShowCheckedModeBanner: false,
-        title: 'Live Wallpapers',
+        title: 'Silly Smile Gun Wallpaper',
         theme: ThemeData(
           useMaterial3: true,
-          brightness: Brightness.light,
-          fontFamily: 'NotoSerif',
-          scaffoldBackgroundColor: Colors.white,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFFB00020),
-            brightness: Brightness.light,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: AppColors.ink,
+          canvasColor: AppColors.ink,
+          textTheme: AppText.textTheme(),
+          colorScheme: const ColorScheme.dark(
+            brightness: Brightness.dark,
+            primary: AppColors.crimson,
+            onPrimary: AppColors.bone,
+            secondary: AppColors.emberGlow,
+            onSecondary: AppColors.ink,
+            surface: AppColors.obsidian,
+            onSurface: AppColors.bone,
+            surfaceContainerHighest: AppColors.graphite,
+            outline: AppColors.hairline,
+            error: AppColors.crimsonDeep,
           ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            foregroundColor: Color(0xFFB00020),
-            centerTitle: true,
+          appBarTheme: AppBarTheme(
+            backgroundColor: AppColors.ink,
+            foregroundColor: AppColors.bone,
             elevation: 0,
             scrolledUnderElevation: 0,
+            centerTitle: false,
+            titleTextStyle: AppText.headline(size: 17, weight: FontWeight.w800),
+            iconTheme: const IconThemeData(color: AppColors.bone),
           ),
           dialogTheme: DialogThemeData(
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.obsidian,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: AppColors.hairline),
             ),
+            titleTextStyle: AppText.headline(size: 18),
+            contentTextStyle: AppText.body(),
           ),
           filledButtonTheme: FilledButtonThemeData(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFB00020),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+              backgroundColor: AppColors.crimson,
+              foregroundColor: AppColors.bone,
+              disabledBackgroundColor: AppColors.crimson.withValues(alpha: 0.4),
+              minimumSize: const Size(0, 52),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(2)),
               ),
+              textStyle: AppText.button(),
             ),
           ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.bone,
+              side: const BorderSide(color: AppColors.hairline),
+              minimumSize: const Size(0, 52),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(2)),
+              ),
+              textStyle: AppText.button(),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.bone,
+              textStyle: AppText.button(),
+            ),
+          ),
+          progressIndicatorTheme: const ProgressIndicatorThemeData(
+            color: AppColors.crimson,
+            linearTrackColor: AppColors.graphite,
+            circularTrackColor: AppColors.graphite,
+          ),
+          drawerTheme: const DrawerThemeData(
+            backgroundColor: AppColors.ink,
+            scrimColor: Color(0xCC000000),
+          ),
+          dividerTheme: const DividerThemeData(
+            color: AppColors.hairline,
+            thickness: 1,
+            space: 1,
+          ),
+          iconTheme: const IconThemeData(color: AppColors.bone),
+          listTileTheme: const ListTileThemeData(
+            iconColor: AppColors.bone,
+            textColor: AppColors.bone,
+          ),
+          splashFactory: InkSparkle.splashFactory,
         ),
         home: const SplashScreen(),
       ),

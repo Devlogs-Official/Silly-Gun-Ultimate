@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../models/wallpaper_model.dart';
+import 'app_colors.dart';
 
 class WallpaperThumbnailStrip extends StatefulWidget {
   const WallpaperThumbnailStrip({
@@ -22,8 +23,8 @@ class WallpaperThumbnailStrip extends StatefulWidget {
 }
 
 class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
-  static const double _horizontalPadding = 18;
-  static const double _itemWidth = 90;
+  static const double _horizontalPadding = 22;
+  static const double _itemWidth = 76;
   static const double _itemGap = 10;
 
   late final ScrollController _scrollController;
@@ -58,18 +59,14 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
     }
 
     final position = _scrollController.position;
-    final selectedCenter =
-        _horizontalPadding +
+    final selectedCenter = _horizontalPadding +
         (widget.selectedIndex * (_itemWidth + _itemGap)) +
         (_itemWidth / 2);
     final target = selectedCenter - (position.viewportDimension / 2);
-    final double clampedTarget = target
-        .clamp(0.0, position.maxScrollExtent)
-        .toDouble();
+    final double clampedTarget =
+        target.clamp(0.0, position.maxScrollExtent).toDouble();
 
-    if ((position.pixels - clampedTarget).abs() < 1) {
-      return;
-    }
+    if ((position.pixels - clampedTarget).abs() < 1) return;
 
     if (animate) {
       _scrollController.animateTo(
@@ -91,15 +88,16 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 92,
+    return Container(
+      height: 96,
+      color: AppColors.ink,
       child: ListView.separated(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
         physics: const BouncingScrollPhysics(),
         itemCount: widget.wallpapers.length,
-        separatorBuilder: (context, index) => const SizedBox(width: _itemGap),
+        separatorBuilder: (_, _) => const SizedBox(width: _itemGap),
         itemBuilder: (context, index) {
           final wallpaper = widget.wallpapers[index];
           final bool isSelected = index == widget.selectedIndex;
@@ -111,42 +109,33 @@ class _WallpaperThumbnailStripState extends State<WallpaperThumbnailStrip> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 260),
                   curve: Curves.easeOutCubic,
-                  width: isSelected ? 78 : 66,
-                  height: isSelected ? 78 : 66,
+                  width: isSelected ? 76 : 60,
+                  height: isSelected ? 76 : 60,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-
+                    borderRadius: BorderRadius.circular(2),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFFB00020)
-                          : Colors.transparent,
-                      width: 3,
+                          ? AppColors.crimson
+                          : AppColors.hairline,
+                      width: 2,
                     ),
-
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: const Color(
-                            0xFFB00020,
-                          ).withValues(alpha: 0.35),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
-                        ),
-                    ],
                   ),
-
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(0),
                     child: CachedNetworkImage(
                       imageUrl: wallpaper.thumbnailUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
                       fadeInDuration: const Duration(milliseconds: 220),
-                      placeholder: (context, url) => const _ThumbShimmer(),
-                      errorWidget: (context, url, error) => const ColoredBox(
-                        color: Color(0xFF181C24),
-                        child: Icon(Icons.broken_image_outlined, size: 18),
+                      placeholder: (_, _) => const _ThumbShimmer(),
+                      errorWidget: (_, _, _) => const ColoredBox(
+                        color: AppColors.graphite,
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 16,
+                          color: AppColors.ash,
+                        ),
                       ),
                     ),
                   ),
@@ -166,14 +155,14 @@ class ThumbnailStripShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 92,
+      height: 96,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 22),
         itemCount: 7,
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemBuilder: (context, index) =>
-            const SizedBox(width: 58, child: _ThumbShimmer()),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (_, _) =>
+            const SizedBox(width: 60, child: _ThumbShimmer()),
       ),
     );
   }
@@ -185,13 +174,10 @@ class _ThumbShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: const Color(0xFF171B24),
-      highlightColor: const Color(0xFF2B3444),
+      baseColor: AppColors.obsidian,
+      highlightColor: AppColors.graphite,
       child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-        ),
+        decoration: const BoxDecoration(color: Colors.white),
       ),
     );
   }

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -11,9 +13,10 @@ import '../../core/app_constants.dart';
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
 import '../../services/wallpaper_apply_service.dart';
+import '../../widgets/app_colors.dart';
 import '../../widgets/app_snackbar.dart';
+import '../../widgets/app_typography.dart';
 import '../../widgets/bottom_action_buttons.dart';
-import '../../widgets/video_loader.dart';
 
 class FullscreenPreviewScreen extends StatefulWidget {
   const FullscreenPreviewScreen({super.key, required this.wallpaper});
@@ -26,9 +29,10 @@ class FullscreenPreviewScreen extends StatefulWidget {
 }
 
 class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
-  late final VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   final WallpaperApplyService _applyService = WallpaperApplyService();
   bool _ready = false;
+  bool _hasError = false;
   bool _isApplying = false;
   bool _isSharing = false;
 
@@ -36,23 +40,57 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _controller = VideoPlayerController.networkUrl(
-      Uri.parse(widget.wallpaper.imageUrl),
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-    );
     _initialize();
   }
 
   Future<void> _initialize() async {
-    try {
-      await _controller.setLooping(true);
-      await _controller.setVolume(0);
-      await _controller.initialize();
-      await _controller.play();
-      if (mounted) setState(() => _ready = true);
-    } catch (_) {
-      if (mounted) setState(() => _ready = false);
+    if (mounted) {
+      setState(() {
+        _ready = false;
+        _hasError = false;
+      });
     }
+
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(widget.wallpaper.imageUrl),
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
+    _controller = controller;
+
+    try {
+      await controller.setLooping(true);
+      await controller.setVolume(0);
+      await controller.initialize().timeout(const Duration(seconds: 20));
+      if (!identical(_controller, controller)) {
+        await controller.dispose();
+        return;
+      }
+      await controller.play();
+      if (mounted) setState(() => _ready = true);
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Fullscreen video init failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (identical(_controller, controller)) {
+        _controller = null;
+      }
+      await controller.dispose();
+      if (mounted) {
+        setState(() {
+          _ready = false;
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _retry() async {
+    final old = _controller;
+    _controller = null;
+    await old?.dispose();
+    await _initialize();
   }
 
   Future<void> _shareWallpaper() async {
@@ -60,7 +98,6 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     setState(() => _isSharing = true);
 
     try {
-      // Download video to a temp file
       final response = await http.get(Uri.parse(widget.wallpaper.imageUrl));
       if (response.statusCode != 200) {
         throw Exception('Failed to download video: ${response.statusCode}');
@@ -102,9 +139,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
       );
 
       if (!mounted) return;
-
       Navigator.of(context, rootNavigator: true).pop();
-
       AppSnackbar.success(message);
     } catch (error, stackTrace) {
       AppLogger.error(
@@ -112,20 +147,15 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
         error: error,
         stackTrace: stackTrace,
       );
-
       if (!mounted) return;
-
       Navigator.of(context, rootNavigator: true).pop();
-
       AppSnackbar.error(
         error is WallpaperApplyException
             ? error.message
             : 'Unable to apply live wallpaper.',
       );
     } finally {
-      if (mounted) {
-        setState(() => _isApplying = false);
-      }
+      if (mounted) setState(() => _isApplying = false);
     }
   }
 
@@ -133,22 +163,32 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
-        child: DecoratedBox(
+      barrierColor: const Color(0xCC000000),
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
           decoration: BoxDecoration(
-            color: Color(0xEE11151D),
-            borderRadius: BorderRadius.all(Radius.circular(22)),
+            color: AppColors.obsidian,
+            borderRadius: BorderRadius.circular(2),
+            border: Border.all(color: AppColors.hairline),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: SizedBox(
-              width: 34,
-              height: 34,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.crimson,
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+              Text(
+                'APPLYING',
+                style: AppText.button(color: AppColors.bone, size: 12),
+              ),
+            ],
           ),
         ),
       ),
@@ -159,51 +199,160 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
   void dispose() {
     _applyService.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (_ready)
-              FittedBox(
+      backgroundColor: AppColors.ink,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Always-visible thumbnail backdrop
+          CachedNetworkImage(
+            imageUrl: widget.wallpaper.thumbnailUrl,
+            fit: BoxFit.cover,
+            fadeInDuration: const Duration(milliseconds: 200),
+            placeholder: (_, _) => const ColoredBox(color: AppColors.graphite),
+            errorWidget: (_, _, _) => const ColoredBox(color: AppColors.ink),
+          ),
+
+          // 2. Video plays over the thumbnail once ready
+          if (_ready && controller != null && controller.value.isInitialized)
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 280),
+              opacity: 1,
+              child: FittedBox(
                 fit: BoxFit.cover,
                 child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller),
+                  width: controller.value.size.width,
+                  height: controller.value.size.height,
+                  child: VideoPlayer(controller),
                 ),
-              )
-            else
-              const VideoLoader(borderRadius: 0),
-            Positioned(
-              top: MediaQuery.paddingOf(context).top + 10,
-              left: 14,
-              child: IconButton.filled(
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.42),
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded),
               ),
             ),
-          ],
-        ),
+
+          // 3. Loading hint or error state
+          if (!_ready)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.paddingOf(context).bottom + 110,
+              child: Center(
+                child: _hasError
+                    ? _ErrorPill(onRetry: _retry)
+                    : const _LoadingPill(),
+              ),
+            ),
+
+          // 4. Close button
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 12,
+            left: 16,
+            child: Material(
+              color: AppColors.ink.withValues(alpha: 0.6),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(50)),
+                side: BorderSide(color: AppColors.hairline),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(50),
+                onTap: () => Navigator.of(context).pop(),
+                child: const SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: AppColors.bone,
+                    size: 18,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomActionButtons(
         isApplying: _isApplying,
         onShare: () {
-          if (!_isSharing) {
-            _shareWallpaper();
-          }
+          if (!_isSharing) _shareWallpaper();
         },
         onApply: _applyWallpaper,
+      ),
+    );
+  }
+}
+
+class _LoadingPill extends StatelessWidget {
+  const _LoadingPill();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.ink.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(50),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.crimson,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'LOADING MOTION',
+            style: AppText.mono(size: 10.5, color: AppColors.bone),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorPill extends StatelessWidget {
+  const _ErrorPill({required this.onRetry});
+
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.crimson,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(50)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(50),
+        onTap: onRetry,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.refresh_rounded,
+                size: 16,
+                color: AppColors.bone,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'RETRY MOTION',
+                style: AppText.button(size: 11, color: AppColors.bone),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

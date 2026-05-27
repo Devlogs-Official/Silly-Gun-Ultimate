@@ -153,6 +153,29 @@ class WallpaperProvider extends ChangeNotifier {
     await fetchInitialWallpapers(forceRefresh: true, isLive: isLive);
   }
 
+  Future<void> clearCacheAndReset() async {
+    try {
+      await _cacheService.clear();
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Clearing wallpaper cache failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    for (final isLive in [true, false]) {
+      _itemsFor(isLive).clear();
+      _currentPageByType[isLive] = 0;
+      _totalPagesByType[isLive] = 1;
+      _isLoadingByType[isLive] = false;
+      _isLoadingMoreByType[isLive] = false;
+      _cacheRestoredByType[isLive] = false;
+      _errorByType[isLive] = null;
+    }
+    _notifySafely();
+  }
+
   void _restoreCacheIfNeeded({required bool isLive, bool notify = true}) {
     if ((_cacheRestoredByType[isLive] ?? false) || _itemsFor(isLive).isNotEmpty) {
       return;

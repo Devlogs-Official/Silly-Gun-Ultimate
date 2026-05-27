@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:silly_gun_ultimate/widgets/app_colors.dart';
+
+import 'app_colors.dart';
+import 'app_typography.dart';
 
 class ExitDialog {
   const ExitDialog._();
@@ -9,76 +11,65 @@ class ExitDialog {
     final shouldExit = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
+      barrierColor: const Color(0xCC000000),
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(horizontal: 28),
-          child: AnimatedScale(
-            scale: 1,
-            duration: const Duration(milliseconds: 180),
-            child: Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: const Color(0xF211151D),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0x1FFFFFFF)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.35),
-                    blurRadius: 28,
-                    offset: const Offset(0, 14),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.logout_rounded,
-                    color: Color(0xFF8FE3CF),
-                    size: 42,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Exit App',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Are you sure you want to exit?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFB8C1D1),
-                      height: 1.35,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(false),
-                          child: const Text('Cancel'),
-                        ),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
+            decoration: BoxDecoration(
+              color: AppColors.obsidian,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: AppColors.hairline),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x80000000),
+                  blurRadius: 28,
+                  offset: Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(width: 22, height: 2, color: AppColors.crimson),
+                    const SizedBox(width: 10),
+                    Text('EXIT', style: AppText.eyebrow()),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'LEAVE GALLERY?',
+                  style: AppText.display(size: 30, letterSpacing: 1.2),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your saved wallpapers stay with you for next time.',
+                  style: AppText.body(),
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('STAY'),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.primary
-                          ),
-                          onPressed: () => Navigator.of(context).pop(true),
-                          child: const Text('Exit'),
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('EXIT'),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );

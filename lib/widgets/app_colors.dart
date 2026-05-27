@@ -1,11 +1,31 @@
 import 'package:flutter/material.dart';
 
+/// Neon-Noir Underground palette.
+/// Pitch-black canvas, surgical crimson signature, bone-warm text.
 class AppColors {
-  static const Color primary = Color(0xFFB00020);
-  static const Color background = Color(0xFFF7F9FC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color softSurface = Color(0xFFF1F5F9);
-  static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF475569);
-  static const Color border = Color(0xFFE2E8F0);
+  AppColors._();
+
+  static const Color ink = Color(0xFF0A0A0E);
+  static const Color obsidian = Color(0xFF13141A);
+  static const Color graphite = Color(0xFF1C1E28);
+  static const Color slate = Color(0xFF262835);
+
+  static const Color bone = Color(0xFFF5F1E8);
+  static const Color ash = Color(0xFF8B8D9B);
+  static const Color smoke = Color(0xFF5A5C6A);
+
+  static const Color crimson = Color(0xFFFF2E4D);
+  static const Color crimsonDeep = Color(0xFFD1233B);
+  static const Color emberGlow = Color(0xFFFF6B7E);
+
+  static const Color hairline = Color(0xFF26283A);
+
+  // Legacy aliases kept so older imports still compile.
+  static const Color primary = crimson;
+  static const Color background = ink;
+  static const Color surface = obsidian;
+  static const Color softSurface = graphite;
+  static const Color textPrimary = bone;
+  static const Color textSecondary = ash;
+  static const Color border = hairline;
 }

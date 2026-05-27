@@ -2,23 +2,27 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../core/app_logger.dart';
 
 enum InternetTransport { none, wifi, mobile, other }
 
+/// Tracks the OS-reported connectivity transport (WiFi / mobile / none).
+///
+/// We deliberately *do not* run reachability pings (e.g. via
+/// `internet_connection_checker`) to gate UI. Those produce false negatives on
+/// mobile networks, captive-portal setups, ad-blocking DNS, and restricted
+/// regions — which then surface as misleading "no internet" snackbars even
+/// when the user clearly has a working connection. Instead we treat any active
+/// transport as "has internet" and let real API calls fail with their own
+/// error if the network turns out to be broken — `WallpaperService` already
+/// translates `SocketException` / timeout into a user-facing message.
 class ConnectivityService extends ChangeNotifier {
-  ConnectivityService({
-    Connectivity? connectivity,
-    InternetConnectionChecker? internetChecker,
-  })  : _connectivity = connectivity ?? Connectivity(),
-        _internetChecker = internetChecker ?? InternetConnectionChecker.instance;
+  ConnectivityService({Connectivity? connectivity})
+      : _connectivity = connectivity ?? Connectivity();
 
   final Connectivity _connectivity;
-  final InternetConnectionChecker _internetChecker;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  StreamSubscription<InternetConnectionStatus>? _internetSubscription;
 
   bool _hasInternet = false;
   InternetTransport _transport = InternetTransport.none;
@@ -33,19 +37,10 @@ class ConnectivityService extends ChangeNotifier {
 
   Future<void> initialize() async {
     final results = await _connectivity.checkConnectivity();
-    final hasConnection = await _internetChecker.hasConnection;
-    _applyState(results, hasConnection, notify: false);
+    _applyState(results, notify: false);
 
     _connectivitySubscription =
-        _connectivity.onConnectivityChanged.listen((results) async {
-      final hasConnection = await _internetChecker.hasConnection;
-      _applyState(results, hasConnection);
-    });
-
-    _internetSubscription = _internetChecker.onStatusChange.listen((status) async {
-      final results = await _connectivity.checkConnectivity();
-      _applyState(results, status == InternetConnectionStatus.connected);
-    });
+        _connectivity.onConnectivityChanged.listen(_applyState);
 
     _isInitialized = true;
     _notifySafely();
@@ -53,19 +48,13 @@ class ConnectivityService extends ChangeNotifier {
 
   Future<bool> refresh() async {
     final results = await _connectivity.checkConnectivity();
-    final hasConnection = await _internetChecker.hasConnection;
-    _applyState(results, hasConnection);
+    _applyState(results);
     return _hasInternet;
   }
 
-  void _applyState(
-    List<ConnectivityResult> results,
-    bool hasConnection, {
-    bool notify = true,
-  }) {
+  void _applyState(List<ConnectivityResult> results, {bool notify = true}) {
     final nextTransport = _transportFrom(results);
-    final nextHasInternet =
-        hasConnection && nextTransport != InternetTransport.none;
+    final nextHasInternet = nextTransport != InternetTransport.none;
 
     if (_transport == nextTransport &&
         _hasInternet == nextHasInternet &&
@@ -84,13 +73,18 @@ class ConnectivityService extends ChangeNotifier {
   }
 
   InternetTransport _transportFrom(List<ConnectivityResult> results) {
+    if (results.isEmpty) return InternetTransport.none;
     if (results.contains(ConnectivityResult.none)) return InternetTransport.none;
     if (results.contains(ConnectivityResult.wifi)) return InternetTransport.wifi;
     if (results.contains(ConnectivityResult.mobile)) {
       return InternetTransport.mobile;
     }
-    if (results.isEmpty) return InternetTransport.none;
-    return InternetTransport.other;
+    if (results.contains(ConnectivityResult.ethernet) ||
+        results.contains(ConnectivityResult.vpn) ||
+        results.contains(ConnectivityResult.bluetooth)) {
+      return InternetTransport.other;
+    }
+    return InternetTransport.none;
   }
 
   void _notifySafely() {
@@ -100,7 +94,6 @@ class ConnectivityService extends ChangeNotifier {
   @override
   void dispose() {
     _connectivitySubscription?.cancel();
-    _internetSubscription?.cancel();
     super.dispose();
   }
 }

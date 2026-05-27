@@ -6,90 +6,170 @@ import 'package:silly_gun_ultimate/screens/static_wallpapers/static_preview_scre
 import '../models/wallpaper_model.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/app_colors.dart';
+import '../widgets/app_typography.dart';
+import '../widgets/section_label.dart';
 import '../widgets/wallpaper_grid_item.dart';
 import 'live_wallpapers/wallpaper_preview_screen.dart';
 
-class FavoritesScreen extends StatelessWidget {
+class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  int _tabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<FavoritesProvider>().favorites;
-    final staticFavorites = favorites
-        .where((item) => !item.isLive)
-        .toList(growable: false);
-    final liveFavorites = favorites
-        .where((item) => item.isLive)
-        .toList(growable: false);
+    final staticFavorites =
+        favorites.where((item) => !item.isLive).toList(growable: false);
+    final liveFavorites =
+        favorites.where((item) => item.isLive).toList(growable: false);
 
-    final ThemeData theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
-    final Color cardColor = isDark ? const Color(0xFF1B1F27) : Colors.white;
-    final Color borderColor = isDark
-        ? const Color(0xFF272C36)
-        : AppColors.border;
-    final Color titleColor = Colors.white;
-    final Color tabIndicatorColor = isDark
-        ? const Color(0xFF2A3550)
-        : AppColors.primary;
-    final Color tabUnselected = isDark
-        ? const Color(0xFF8A93A6)
-        : AppColors.textSecondary;
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          title: Text("Favorites Wallpapers"),
+    final activeList = _tabIndex == 0 ? staticFavorites : liveFavorites;
+
+    return Scaffold(
+      backgroundColor: AppColors.ink,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            _Header(total: favorites.length),
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 12, 22, 14),
+              child: SectionLabel(
+                eyebrow: 'YOUR LIBRARY',
+                headline: 'SAVED',
+                trailing:
+                    '${favorites.length.toString().padLeft(2, '0')} ITEMS',
+              ),
+            ),
+            _SegmentedTabs(
+              tabs: [
+                _TabModel(label: 'STATIC', count: staticFavorites.length),
+                _TabModel(label: 'LIVE', count: liveFavorites.length),
+              ],
+              selectedIndex: _tabIndex,
+              onChange: (i) => setState(() => _tabIndex = i),
+            ),
+            const SizedBox(height: 14),
+            Expanded(child: _FavoritesGrid(items: activeList)),
+          ],
         ),
-        body: SafeArea(
-          child: Column(
-            children: <Widget>[
-              const SizedBox(height: 8,),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: borderColor),
-                ),
-                child: TabBar(
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  indicatorPadding: EdgeInsets.zero,
-                  indicator: BoxDecoration(
-                    color: tabIndicatorColor,
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  ),
-                  labelColor: titleColor,
-                  unselectedLabelColor: tabUnselected,
-                  dividerColor: Colors.transparent,
-                  tabs: const <Tab>[
-                    Tab(text: 'Static'),
-                    Tab(text: 'Live'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: TabBarView(
-                  children: <Widget>[
-                    _FavoritesGrid(
-                      items: staticFavorites,
-                      // emptyTitle: 'No static favorites yet',
-                      // emptySubtitle: 'Save regular wallpapers to see them here.',
-                    ),
-                    _FavoritesGrid(
-                      items: liveFavorites,
-                      // emptyTitle: 'No live favorites yet',
-                      // emptySubtitle: 'Save live wallpapers to see them here.',
-                    ),
-                  ],
-                ),
-              ),
-            ],
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.total});
+
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
+      child: Row(
+        children: [
+          Container(width: 22, height: 2, color: AppColors.crimson),
+          const SizedBox(width: 10),
+          Text('CHANNEL · 03', style: AppText.eyebrow()),
+          const Spacer(),
+          Text(
+            '${total.toString().padLeft(2, '0')} TOTAL',
+            style: AppText.mono(color: AppColors.bone),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabModel {
+  const _TabModel({required this.label, required this.count});
+
+  final String label;
+  final int count;
+}
+
+class _SegmentedTabs extends StatelessWidget {
+  const _SegmentedTabs({
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onChange,
+  });
+
+  final List<_TabModel> tabs;
+  final int selectedIndex;
+  final ValueChanged<int> onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: AppColors.obsidian,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: AppColors.hairline),
+        ),
+        child: Row(
+          children: List.generate(tabs.length, (i) {
+            final t = tabs[i];
+            final selected = i == selectedIndex;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => onChange(i),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: selected ? AppColors.crimson : Colors.transparent,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        t.label,
+                        style: AppText.button(
+                          size: 11,
+                          color: selected ? AppColors.bone : AppColors.ash,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppColors.bone.withValues(alpha: 0.16)
+                              : AppColors.graphite,
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Text(
+                          t.count.toString().padLeft(2, '0'),
+                          style: AppText.mono(
+                            size: 9.5,
+                            color: selected ? AppColors.bone : AppColors.ash,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );
@@ -103,15 +183,32 @@ class _FavoritesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FavoritesProvider favoritesProvider = context
-        .watch<FavoritesProvider>();
+    final favoritesProvider = context.watch<FavoritesProvider>();
+
     if (items.isEmpty) {
-      return const Center(
-        child: Text(
-          'No favorites yet',
-          style: TextStyle(
-            color: Color(0xFFFF7597),
-            fontWeight: FontWeight.w700,
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.bookmark_outline_rounded,
+                color: AppColors.crimson,
+                size: 56,
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'NOTHING SAVED',
+                style: AppText.display(size: 28, letterSpacing: 2.4),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Tap the heart on any wallpaper to add it here.',
+                textAlign: TextAlign.center,
+                style: AppText.body(),
+              ),
+            ],
           ),
         ),
       );
@@ -119,14 +216,13 @@ class _FavoritesGrid extends StatelessWidget {
 
     return MasonryGridView.count(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
       crossAxisCount: 2,
       mainAxisSpacing: 14,
       crossAxisSpacing: 14,
       itemCount: items.length,
       itemBuilder: (context, index) {
         final wallpaper = items[index];
-
         return WallpaperGridItem(
           key: ValueKey('fav-${wallpaper.id}'),
           wallpaper: wallpaper,
@@ -142,7 +238,6 @@ class _FavoritesGrid extends StatelessWidget {
                   ),
                 ),
               );
-              return;
             } else {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -154,18 +249,9 @@ class _FavoritesGrid extends StatelessWidget {
                 ),
               );
             }
-            // Navigator.of(context).push(
-            // MaterialPageRoute<void>(
-            //   builder: (_) => StaticWallpaperDetailScreen(
-            //     wallpaper: wallpaper,
-            //   ),
-            // ),
-            // );
           },
           isFavorite: favoritesProvider.isFavorite(wallpaper),
-          onFavoriteToggle: () {
-            favoritesProvider.toggleFavorite(wallpaper);
-          },
+          onFavoriteToggle: () => favoritesProvider.toggleFavorite(wallpaper),
         );
       },
     );

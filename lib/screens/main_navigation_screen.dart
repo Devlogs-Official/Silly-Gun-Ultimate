@@ -1,10 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:silly_gun_ultimate/widgets/app_colors.dart';
-import 'package:stylish_bottom_bar/stylish_bottom_bar.dart';
 
 import '../providers/wallpaper_provider.dart';
+import '../widgets/app_colors.dart';
+import '../widgets/app_typography.dart';
 import 'app_drawer.dart';
 import 'favorites_screen.dart';
 import 'static_wallpapers/home_screen.dart';
@@ -38,11 +40,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'Exit App',
-      barrierColor: const Color(0x66000000),
+      barrierColor: const Color(0xCC000000),
       transitionDuration: const Duration(milliseconds: 320),
-      pageBuilder: (context, animation, secondaryAnimation) =>
-      const _ExitAppDialog(),
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
+      pageBuilder: (_, _, _) => const _ExitAppDialog(),
+      transitionBuilder: (context, animation, _, child) {
         final CurvedAnimation curve = CurvedAnimation(
           parent: animation,
           curve: Curves.easeOutCubic,
@@ -61,10 +62,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   List<Widget> get _screens => <Widget>[
-    HomeScreen(onOpenLiveTab: () => setState(() => _selectedIndex = 1)),
-    const LiveWallpapersScreen(),
-    const FavoritesScreen(),
-  ];
+        HomeScreen(onOpenLiveTab: () => setState(() => _selectedIndex = 1)),
+        const LiveWallpapersScreen(),
+        const FavoritesScreen(),
+      ];
 
   @override
   void initState() {
@@ -85,7 +86,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         _handleBackPress();
       },
       child: Scaffold(
-        drawer: ModernDrawer(),
+        backgroundColor: AppColors.ink,
+        extendBody: true,
+        drawer: const ModernDrawer(),
         body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 260),
           child: KeyedSubtree(
@@ -93,45 +96,117 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: _screens[_selectedIndex],
           ),
         ),
-        bottomNavigationBar: StylishBottomBar(
-          backgroundColor: const Color(0xFFB00020),
-          option: AnimatedBarOptions(
-            barAnimation: BarAnimation.fade,
-            iconStyle: IconStyle.Default,
-          ),
-          currentIndex: _selectedIndex,
-          onTap: (value) {
-            if (value == _selectedIndex) return;
-            setState(() => _selectedIndex = value);
+        bottomNavigationBar: _FloatingNavBar(
+          selectedIndex: _selectedIndex,
+          onTap: (index) {
+            if (index == _selectedIndex) return;
+            setState(() => _selectedIndex = index);
           },
-          items: [
-            BottomBarItem(
-              unSelectedColor: Colors.white70,
-              icon: const Icon(Icons.dashboard_outlined),
-              selectedIcon: const Icon(Icons.dashboard_rounded),
-              title: const Text('Home'),
-              selectedColor: Colors.white,
-            ),
-            BottomBarItem(
-              icon: const Icon(Icons.play_circle_outline_rounded),
-              selectedIcon: const Icon(Icons.play_circle_fill_rounded),
-              title: const Text('Live'),
-              selectedColor: Colors.white,
-              unSelectedColor: Colors.white70,
-            ),
-            BottomBarItem(
-              icon: const Icon(Icons.favorite_border_rounded),
-              selectedIcon: const Icon(Icons.favorite_rounded),
-              title: const Text('Favorites'),
-              selectedColor: Colors.white,
-              unSelectedColor: Colors.white70,
-            ),
-          ],
         ),
       ),
     );
   }
 }
+
+class _FloatingNavBar extends StatelessWidget {
+  const _FloatingNavBar({required this.selectedIndex, required this.onTap});
+
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
+
+  static const List<_NavItem> _items = <_NavItem>[
+    _NavItem(label: 'HOME', icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded),
+    _NavItem(label: 'LIVE', icon: Icons.play_circle_outline_rounded, activeIcon: Icons.play_circle_fill_rounded),
+    _NavItem(label: 'SAVED', icon: Icons.bookmark_outline_rounded, activeIcon: Icons.bookmark_rounded),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        16 + MediaQuery.viewPaddingOf(context).bottom * 0.4,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(56),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            height: 68,
+            decoration: BoxDecoration(
+              color: AppColors.obsidian.withValues(alpha: 0.86),
+              borderRadius: BorderRadius.circular(56),
+              border: Border.all(color: AppColors.hairline),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  blurRadius: 30,
+                  offset: Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Row(
+              children: List.generate(_items.length, (index) {
+                final item = _items[index];
+                final selected = index == selectedIndex;
+                return Expanded(
+                  child: InkWell(
+                    onTap: () => onTap(index),
+                    borderRadius: BorderRadius.circular(56),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeOutCubic,
+                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                      decoration: BoxDecoration(
+                        color: selected ? AppColors.crimson : Colors.transparent,
+                        borderRadius: BorderRadius.circular(48),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            selected ? item.activeIcon : item.icon,
+                            size: 20,
+                            color: selected ? AppColors.bone : AppColors.ash,
+                          ),
+                          if (selected) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              item.label,
+                              style: AppText.button(
+                                color: AppColors.bone,
+                                size: 11,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.activeIcon,
+  });
+
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+}
+
 class _ExitAppDialog extends StatelessWidget {
   const _ExitAppDialog();
 
@@ -139,100 +214,58 @@ class _ExitAppDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Material(
           color: Colors.transparent,
           child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: <Color>[Color(0xFFFFFFFF), Color(0xFFF4F7FD)],
-              ),
-              boxShadow: const <BoxShadow>[
+              borderRadius: BorderRadius.circular(4),
+              color: AppColors.obsidian,
+              border: Border.all(color: AppColors.hairline),
+              boxShadow: const [
                 BoxShadow(
-                  color: Color(0x2A1A2238),
-                  blurRadius: 32,
-                  offset: Offset(0, 16),
+                  color: Color(0x80000000),
+                  blurRadius: 28,
+                  offset: Offset(0, 14),
                 ),
               ],
             ),
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+            padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F4FF),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child:  Icon(
-                    Icons.power_settings_new_rounded,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(width: 22, height: 2, color: AppColors.crimson),
+                    const SizedBox(width: 10),
+                    Text('EXIT', style: AppText.eyebrow()),
+                  ],
                 ),
                 const SizedBox(height: 14),
-                const Text(
-                  'Exit Silly Wallpapers?',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF151A24),
-                  ),
+                Text(
+                  'LEAVE GALLERY?',
+                  style: AppText.display(size: 32, letterSpacing: 1.2),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Are you sure you want to close app right now?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF657089),
-                  ),
+                const SizedBox(height: 10),
+                Text(
+                  'Your saved wallpapers stay with you for next time.',
+                  style: AppText.body(),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 22),
                 Row(
-                  children: <Widget>[
+                  children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFFCCD4E4)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                        ),
-                        child: const Text(
-                          'Stay',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
+                        child: const Text('STAY'),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                        ),
-                        child: const Text(
-                          'Exit',
-                          style: TextStyle(
-                            fontFamily: 'Chillax',
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: const Text('EXIT'),
                       ),
                     ),
                   ],

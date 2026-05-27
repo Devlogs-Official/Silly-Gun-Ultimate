@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:silly_gun_ultimate/core/app_constants.dart';
-import 'package:wallpaper_manager_plus/wallpaper_manager_plus.dart';
 
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
+import '../../services/settings_service.dart';
 import '../../services/wallpaper_apply_service.dart';
+import '../../widgets/app_colors.dart';
 import '../../widgets/app_snackbar.dart';
+import '../../widgets/app_typography.dart';
 import '../../widgets/bottom_action_buttons.dart';
 import '../../widgets/video_loader.dart';
 
@@ -113,65 +116,40 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   }
 
   Future<void> _showWallpaperOptions() async {
-    final result = await showModalBottomSheet<int>(
-      context: context,
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.home),
-                title: const Text('Home Screen'),
-                onTap: () {
-                  Navigator.pop(context, WallpaperManagerPlus.homeScreen);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.lock),
-                title: const Text('Lock Screen'),
-                onTap: () {
-                  Navigator.pop(context, WallpaperManagerPlus.lockScreen);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.phone_android),
-                title: const Text('Both Screens'),
-                onTap: () {
-                  Navigator.pop(context, WallpaperManagerPlus.bothScreens);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (result != null) {
-      _applyWallpaper(result);
-    }
+    final target = context.read<SettingsService>().applyTarget;
+    await _applyWallpaper(target.wallpaperManagerLocation);
   }
 
   void _showApplyingDialog() {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(
-        child: DecoratedBox(
+      barrierColor: const Color(0xCC000000),
+      builder: (_) => Center(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(28, 22, 28, 22),
           decoration: BoxDecoration(
-            color: Color(0xEE11151D),
-            borderRadius: BorderRadius.all(Radius.circular(22)),
+            color: AppColors.obsidian,
+            borderRadius: BorderRadius.circular(2),
+            border: Border.all(color: AppColors.hairline),
           ),
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: SizedBox(
-              width: 34,
-              height: 34,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: Colors.white,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.crimson,
+                ),
               ),
-            ),
+              const SizedBox(height: 14),
+              Text(
+                'APPLYING',
+                style: AppText.button(color: AppColors.bone, size: 12),
+              ),
+            ],
           ),
         ),
       ),
@@ -188,7 +166,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.ink,
       body: SafeArea(
         child: Stack(
           fit: StackFit.expand,
@@ -198,22 +176,37 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
-
-              placeholder: (context, url) => const VideoLoader(borderRadius: 0),
-
-              errorWidget: (context, url, error) => const Center(
-                child: Icon(Icons.broken_image, color: Colors.white, size: 40),
+              placeholder: (_, _) => const VideoLoader(borderRadius: 0),
+              errorWidget: (_, _, _) => const Center(
+                child: Icon(
+                  Icons.broken_image,
+                  color: AppColors.ash,
+                  size: 40,
+                ),
               ),
             ),
             Positioned(
-              top: MediaQuery.paddingOf(context).top + 10,
-              left: 14,
-              child: IconButton.filled(
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.42),
+              top: MediaQuery.paddingOf(context).top + 12,
+              left: 16,
+              child: Material(
+                color: AppColors.ink.withValues(alpha: 0.6),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                  side: BorderSide(color: AppColors.hairline),
                 ),
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(50),
+                  onTap: () => Navigator.of(context).pop(),
+                  child: const SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: AppColors.bone,
+                      size: 18,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

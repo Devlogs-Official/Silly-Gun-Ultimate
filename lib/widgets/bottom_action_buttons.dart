@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+import 'app_typography.dart';
+
 class BottomActionButtons extends StatelessWidget {
   const BottomActionButtons({
     super.key,
@@ -14,87 +17,74 @@ class BottomActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.ios_share_rounded,
-                label: 'Share',
-                onPressed: isApplying ? null : onShare,
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.ink,
+        border: const Border(top: BorderSide(color: AppColors.hairline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 64,
+                child: _SecondaryButton(
+                  icon: Icons.ios_share_rounded,
+                  onPressed: isApplying ? null : onShare,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.wallpaper_rounded,
-                label: isApplying ? 'Applying' : 'Apply Wallpaper',
-                onPressed: isApplying ? null : onApply,
-                filled: true,
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: isApplying ? null : onApply,
+                  icon: Icon(
+                    isApplying
+                        ? Icons.hourglass_top_rounded
+                        : Icons.bolt_rounded,
+                    size: 16,
+                  ),
+                  label: Text(
+                    isApplying ? 'APPLYING' : 'APPLY WALLPAPER',
+                  ),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(56),
+                    textStyle: AppText.button(size: 13),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    this.filled = false,
-  });
+class _SecondaryButton extends StatelessWidget {
+  const _SecondaryButton({required this.icon, required this.onPressed});
 
   final IconData icon;
-  final String label;
   final VoidCallback? onPressed;
-  final bool filled;
 
   @override
   Widget build(BuildContext context) {
-    final child = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 19),
-        const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+    return Material(
+      color: AppColors.obsidian,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(2)),
+        side: BorderSide(color: AppColors.hairline),
+      ),
+      child: InkWell(
+        onTap: onPressed,
+        child: SizedBox(
+          height: 56,
+          child: Center(
+            child: Icon(icon, color: AppColors.bone, size: 18),
           ),
         ),
-      ],
-    );
-
-    if (filled) {
-      return FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(54),
-          textStyle: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        child: child,
-      );
-    }
-
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Color(0x33FFFFFF)),
-        minimumSize: const Size.fromHeight(54),
-        textStyle: const TextStyle(fontWeight: FontWeight.w800),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       ),
-      child: child,
     );
   }
 }

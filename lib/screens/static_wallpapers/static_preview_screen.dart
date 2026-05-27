@@ -1,10 +1,12 @@
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:silly_gun_ultimate/screens/static_wallpapers/static_full_preview.dart';
 
 import '../../models/wallpaper_model.dart';
+import '../../widgets/app_colors.dart';
+import '../../widgets/app_typography.dart';
 import '../../widgets/wallpaper_thumbnail_strip.dart';
+import 'static_full_preview.dart';
 
 class StaticPreviewScreen extends StatefulWidget {
   const StaticPreviewScreen({
@@ -19,25 +21,17 @@ class StaticPreviewScreen extends StatefulWidget {
   final int initialIndex;
 
   @override
-  State<StaticPreviewScreen> createState() =>
-      _StaticPreviewScreenState();
+  State<StaticPreviewScreen> createState() => _StaticPreviewScreenState();
 }
 
-class _StaticPreviewScreenState
-    extends State<StaticPreviewScreen> {
+class _StaticPreviewScreenState extends State<StaticPreviewScreen> {
   late final PageController _pageController;
-
   late int _selectedIndex;
 
   @override
   void initState() {
     super.initState();
-
-    _selectedIndex = widget.initialIndex.clamp(
-      0,
-      widget.wallpapers.length - 1,
-    );
-
+    _selectedIndex = widget.initialIndex.clamp(0, widget.wallpapers.length - 1);
     _pageController = PageController(
       initialPage: _selectedIndex,
       viewportFraction: 0.82,
@@ -46,7 +40,6 @@ class _StaticPreviewScreenState
 
   Future<void> _selectWallpaper(int index) async {
     if (index == _selectedIndex) return;
-
     await _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 320),
@@ -67,79 +60,65 @@ class _StaticPreviewScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-
+      backgroundColor: AppColors.ink,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFB00020),
-        foregroundColor: Colors.white,
-
+        backgroundColor: AppColors.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
-
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
+          icon: const Icon(Icons.arrow_back_rounded),
+        ),
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            Container(width: 22, height: 2, color: AppColors.crimson),
+            const SizedBox(width: 10),
+            Text('STATIC', style: AppText.eyebrow()),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 22),
+            child: Center(
+              child: Text(
+                '${(_selectedIndex + 1).toString().padLeft(2, '0')} / ${widget.wallpapers.length.toString().padLeft(2, '0')}',
+                style: AppText.mono(color: AppColors.bone),
+              ),
+            ),
           ),
-        ),
-
-        title: const Text(
-          'Static Wallpapers',
-        ),
+        ],
       ),
-
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                physics:
-                const BouncingScrollPhysics(),
-
+                physics: const BouncingScrollPhysics(),
                 itemCount: widget.wallpapers.length,
-
                 onPageChanged: _onPageChanged,
-
                 itemBuilder: (context, index) {
-                  final wallpaper =
-                  widget.wallpapers[index];
-
-                  final bool active =
-                      index == _selectedIndex;
-
+                  final wallpaper = widget.wallpapers[index];
+                  final bool active = index == _selectedIndex;
                   return AnimatedScale(
-                    duration: const Duration(
-                      milliseconds: 260,
-                    ),
-
+                    duration: const Duration(milliseconds: 260),
                     curve: Curves.easeOutCubic,
-
-                    scale: active ? 1 : 0.92,
-
+                    scale: active ? 1 : 0.9,
                     child: Padding(
-                      padding:
-                      const EdgeInsets.fromLTRB(
-                        8,
-                        28,
-                        8,
-                        20,
-                      ),
-
-                      child: _PreviewCard(
-                        wallpaper: wallpaper,
-                      ),
+                      padding: const EdgeInsets.fromLTRB(6, 18, 6, 14),
+                      child: _PreviewCard(wallpaper: wallpaper),
                     ),
                   );
                 },
               ),
             ),
-
             WallpaperThumbnailStrip(
               wallpapers: widget.wallpapers,
               selectedIndex: _selectedIndex,
               onSelected: _selectWallpaper,
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -148,9 +127,7 @@ class _StaticPreviewScreenState
 }
 
 class _PreviewCard extends StatelessWidget {
-  const _PreviewCard({
-    required this.wallpaper,
-  });
+  const _PreviewCard({required this.wallpaper});
 
   final WallpaperModel wallpaper;
 
@@ -158,196 +135,121 @@ class _PreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Hero(
       tag: 'wallpaper-${wallpaper.id}',
-
       child: Material(
         color: Colors.transparent,
-
         child: Column(
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                BorderRadius.circular(34),
-
-                child: Stack(
-                  fit: StackFit.expand,
-
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl:
-                      wallpaper.imageUrl,
-
-                      fit: BoxFit.cover,
-
-                      fadeInDuration:
-                      const Duration(
-                        milliseconds: 240,
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.obsidian,
+                    border: Border.all(color: AppColors.hairline),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x66000000),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
                       ),
-
-                      placeholder:
-                          (context, url) {
-                        return Container(
-                          color: const Color(
-                            0xFFFFE1EA,
-                          ),
-
-                          child: const Center(
-                            child:
-                            CircularProgressIndicator(
-                              color: Color(0xFFB00020),
+                    ],
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: wallpaper.imageUrl,
+                        fit: BoxFit.cover,
+                        fadeInDuration: const Duration(milliseconds: 240),
+                        placeholder: (_, _) => const ColoredBox(
+                          color: AppColors.graphite,
+                          child: Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.crimson,
+                              ),
                             ),
                           ),
-                        );
-                      },
-
-                      errorWidget:
-                          (
-                          context,
-                          url,
-                          error,
-                          ) {
-                        return const ColoredBox(
-                          color: Color(
-                            0xFFFFE6EC,
-                          ),
-
+                        ),
+                        errorWidget: (_, _, _) => const ColoredBox(
+                          color: AppColors.graphite,
                           child: Center(
                             child: Icon(
-                              Icons
-                                  .broken_image_outlined,
-
+                              Icons.broken_image_outlined,
                               size: 42,
-
-                              color: Color(0xFFB00020),
+                              color: AppColors.ash,
                             ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient:
-                          LinearGradient(
-                            begin:
-                            Alignment.topCenter,
-
-                            end: Alignment
-                                .bottomCenter,
-
-                            colors: [
-                              Colors.transparent,
-
-                              Colors.black
-                                  .withValues(
-                                alpha: 0.12,
-                              ),
-
-                              Colors.black
-                                  .withValues(
-                                alpha: 0.48,
-                              ),
-                            ],
-
-                            stops: const [
-                              0.5,
-                              0.72,
-                              1,
-                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      // Crimson corner accent
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                          width: 32,
+                          height: 4,
+                          color: AppColors.crimson,
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                          width: 4,
+                          height: 32,
+                          color: AppColors.crimson,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-
-            const SizedBox(height: 12),
-
+            const SizedBox(height: 14),
             Padding(
-              padding:
-              const EdgeInsets.symmetric(
-                horizontal: 42,
-              ),
-
+              padding: const EdgeInsets.symmetric(horizontal: 6),
               child: OpenContainer<void>(
-                transitionType:
-                ContainerTransitionType
-                    .fadeThrough,
-
-                transitionDuration:
-                const Duration(
-                  milliseconds: 460,
-                ),
-
+                transitionType: ContainerTransitionType.fadeThrough,
+                transitionDuration: const Duration(milliseconds: 460),
                 closedElevation: 0,
                 openElevation: 0,
-
-                closedColor:
-                const Color(0xFFB00020),
-
-                openColor: Colors.white,
-
-                closedShape:
-                RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(20),
+                closedColor: AppColors.crimson,
+                openColor: AppColors.ink,
+                closedShape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(2)),
                 ),
-
-                openBuilder:
-                    (context, action) =>
-                    StaticFullScreenPreview(
-                      wallpaper: wallpaper,
-                    ),
-
-                closedBuilder:
-                    (_, openContainer) {
+                openBuilder: (_, _) =>
+                    StaticFullScreenPreview(wallpaper: wallpaper),
+                closedBuilder: (_, openContainer) {
                   return InkWell(
                     onTap: openContainer,
-
-                    borderRadius:
-                    BorderRadius.circular(
-                      34,
-                    ),
-
-                    child: const SizedBox(
-                      height: 55,
-
+                    child: SizedBox(
+                      height: 52,
                       child: Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment
-                            .center,
-
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons
-                                .fullscreen_rounded,
-
-                            color: Colors.white,
+                          const Icon(
+                            Icons.fullscreen_rounded,
+                            color: AppColors.bone,
+                            size: 18,
                           ),
-
-                          SizedBox(width: 8),
-
+                          const SizedBox(width: 10),
                           Text(
-                            'Expand',
-
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight:
-                              FontWeight.w900,
+                            'FULLSCREEN PREVIEW',
+                            style: AppText.button(
+                              size: 12.5,
+                              color: AppColors.bone,
                             ),
                           ),
-
-                          SizedBox(width: 8),
-
-                          Icon(
-                            Icons
-                                .chevron_right_rounded,
-
-                            color: Colors.white,
+                          const SizedBox(width: 10),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.bone,
+                            size: 16,
                           ),
                         ],
                       ),

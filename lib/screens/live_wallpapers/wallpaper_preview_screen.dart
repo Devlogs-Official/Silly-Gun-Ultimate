@@ -8,6 +8,8 @@ import '../../core/app_exceptions.dart';
 import '../../core/app_logger.dart';
 import '../../models/wallpaper_model.dart';
 import '../../services/wallpaper_apply_service.dart';
+import '../../widgets/app_colors.dart';
+import '../../widgets/app_typography.dart';
 import '../../widgets/video_loader.dart';
 import '../../widgets/wallpaper_thumbnail_strip.dart';
 import 'fullscreen_preview_screen.dart';
@@ -199,15 +201,34 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
     return PopScope(
       canPop: true,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.ink,
         appBar: AppBar(
-          backgroundColor: Color(0xFFB00020),
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.ink,
+          elevation: 0,
+          scrolledUnderElevation: 0,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            icon: const Icon(Icons.arrow_back_rounded),
           ),
-          title: const Text('Live Wallpapers'),
+          titleSpacing: 0,
+          title: Row(
+            children: [
+              Container(width: 22, height: 2, color: AppColors.crimson),
+              const SizedBox(width: 10),
+              Text('LIVE', style: AppText.eyebrow()),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 22),
+              child: Center(
+                child: Text(
+                  '${(_selectedIndex + 1).toString().padLeft(2, '0')} / ${widget.wallpapers.length.toString().padLeft(2, '0')}',
+                  style: AppText.mono(color: AppColors.bone),
+                ),
+              ),
+            ),
+          ],
         ),
         body: SafeArea(
           child: Column(
@@ -224,9 +245,9 @@ class _WallpaperPreviewScreenState extends State<WallpaperPreviewScreen>
                     return AnimatedScale(
                       duration: const Duration(milliseconds: 260),
                       curve: Curves.easeOutCubic,
-                      scale: active ? 1 : 0.92,
+                      scale: active ? 1 : 0.9,
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 28, 8, 20),
+                        padding: const EdgeInsets.fromLTRB(6, 18, 6, 14),
                         child: _PreviewCard(
                           wallpaper: wallpaper,
                           controller: _controllers[index],
@@ -286,17 +307,28 @@ class _PreviewCard extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(34),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.obsidian,
+                    border: Border.all(color: AppColors.hairline),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x66000000),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 280),
                       child: ready
                           ? SizedBox(
                               key: const ValueKey('video'),
                               child: FittedBox(
-                                // key: const ValueKey('video'),
                                 clipBehavior: Clip.hardEdge,
                                 fit: BoxFit.cover,
                                 child: SizedBox(
@@ -311,15 +343,35 @@ class _PreviewCard extends StatelessWidget {
                               child: CachedNetworkImage(
                                 imageUrl: wallpaper.thumbnailUrl,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) =>
-                                    const VideoLoader(),
-                                errorWidget: (context, url, error) =>
-                                    const ColoredBox(
-                                      color: Colors.black,
-                                      child: Icon(Icons.broken_image_outlined),
-                                    ),
+                                placeholder: (_, _) => const VideoLoader(),
+                                errorWidget: (_, _, _) => const ColoredBox(
+                                  color: AppColors.graphite,
+                                  child: Icon(
+                                    Icons.broken_image_outlined,
+                                    color: AppColors.ash,
+                                  ),
+                                ),
                               ),
                             ),
+                    ),
+                    // Crimson corner accent
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        width: 32,
+                        height: 4,
+                        color: AppColors.crimson,
+                      ),
+                    ),
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        width: 4,
+                        height: 32,
+                        color: AppColors.crimson,
+                      ),
                     ),
                     if (hasError)
                       Positioned.fill(
@@ -356,25 +408,25 @@ class _PreviewCard extends StatelessWidget {
                       ),
                   ],
                 ),
+                ),
               ),
             ),
 
-            // ── Expand button — always outside the card ─────────────
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 42),
+              padding: const EdgeInsets.symmetric(horizontal: 6),
               child: OpenContainer<void>(
                 transitionType: ContainerTransitionType.fadeThrough,
                 transitionDuration: const Duration(milliseconds: 460),
                 closedElevation: 0,
                 openElevation: 0,
-                closedColor: Color(0xFFB00020),
-                openColor: Colors.white,
+                closedColor: AppColors.crimson,
+                openColor: AppColors.ink,
                 onClosed: (_) => onExpandClosed(),
-                closedShape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                closedShape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(2)),
                 ),
-                openBuilder: (context, action) =>
+                openBuilder: (_, _) =>
                     FullscreenPreviewScreen(wallpaper: wallpaper),
                 closedBuilder: (_, openContainer) {
                   return InkWell(
@@ -382,27 +434,29 @@ class _PreviewCard extends StatelessWidget {
                       onExpandOpen();
                       openContainer();
                     },
-                    borderRadius: BorderRadius.circular(34),
-                    child: const SizedBox(
-                      height: 55,
+                    child: SizedBox(
+                      height: 52,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.fullscreen_rounded, color: Colors.white),
-                          SizedBox(width: 8),
+                          const Icon(
+                            Icons.fullscreen_rounded,
+                            color: AppColors.bone,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
                           Text(
-                            'Expand',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0,
+                            'FULLSCREEN PREVIEW',
+                            style: AppText.button(
+                              size: 12.5,
+                              color: AppColors.bone,
                             ),
                           ),
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            color: Colors.white,
+                          const SizedBox(width: 10),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.bone,
+                            size: 16,
                           ),
                         ],
                       ),
