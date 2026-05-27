@@ -5,7 +5,7 @@ class AppConstants {
   static const String appName = 'Silly Smile Gun Wallpaper';
 
   /// Marketing version shown in the settings screen footer.
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.1';
 
   /// Android applicationId / Play Store package id used by Rate + Share.
   static const String androidPackageId = 'pro.devlogs.sillysmilegun.wallpaper';

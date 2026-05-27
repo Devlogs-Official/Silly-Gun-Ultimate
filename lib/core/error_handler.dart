@@ -14,6 +14,11 @@ class ErrorHandler {
       GlobalKey<NavigatorState>();
 
   static void initialize() {
+    // Framework errors (image decode races, disposed controllers during
+    // PageView swipes, layout overflows, codec teardown callbacks, etc.) are
+    // logged but NOT surfaced as snackbars — they're rarely actionable for
+    // the end user and were generating false "something went wrong" toasts
+    // during normal live-wallpaper navigation.
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
       AppLogger.error(
@@ -21,13 +26,19 @@ class ErrorHandler {
         error: details.exception,
         stackTrace: details.stack,
       );
-      showError(details.exception);
     };
   }
 
   static void handleZoneError(Object error, StackTrace stackTrace) {
-    AppLogger.error('Uncaught zone error', error: error, stackTrace: stackTrace);
-    showError(error);
+    // Uncaught zone errors are logged for diagnostics. We deliberately do not
+    // raise a generic snackbar from here — every real, user-actionable error
+    // path already surfaces its own specific message (apply failed, share
+    // failed, no internet, …) via `AppSnackbar` or the retry widgets.
+    AppLogger.error(
+      'Uncaught zone error',
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   static String messageFor(Object error) {
