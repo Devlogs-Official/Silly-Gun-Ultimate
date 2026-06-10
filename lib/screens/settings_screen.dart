@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../core/app_constants.dart';
 import '../core/app_logger.dart';
+import '../core/config/config_manager.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/wallpaper_provider.dart';
+import '../services/ads_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/app_palette.dart';
@@ -64,6 +66,10 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar:
+          ConfigManager.config.showAds && ConfigManager.config.showBannerAds
+          ? const BannerAdWidget(collapsible: false)
+          : null,
     );
   }
 }
@@ -206,8 +212,7 @@ class _ThemeChip extends StatelessWidget {
               Text(
                 label,
                 style: AppText.button(
-                  color:
-                      selected ? const Color(0xFFF5F1E8) : palette.ash,
+                  color: selected ? const Color(0xFFF5F1E8) : palette.ash,
                   size: 11,
                 ),
               ),
@@ -321,8 +326,7 @@ class _ApplyTargetChip extends StatelessWidget {
               Text(
                 label,
                 style: AppText.button(
-                  color:
-                      selected ? const Color(0xFFF5F1E8) : palette.ash,
+                  color: selected ? const Color(0xFFF5F1E8) : palette.ash,
                   size: 11,
                 ),
               ),
@@ -351,7 +355,11 @@ class _StorageCard extends StatelessWidget {
       await wallpaperProvider.clearCacheAndReset();
       AppSnackbar.success('Cache cleared.');
     } catch (error, stackTrace) {
-      AppLogger.error('Cache clear failed', error: error, stackTrace: stackTrace);
+      AppLogger.error(
+        'Cache clear failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
       AppSnackbar.error('Unable to clear cache.');
     }
   }
@@ -506,10 +514,7 @@ class _AboutCard extends StatelessWidget {
                     children: [
                       Text(
                         AppConstants.appName.toUpperCase(),
-                        style: AppText.button(
-                          color: palette.bone,
-                          size: 13,
-                        ),
+                        style: AppText.button(color: palette.bone, size: 13),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -570,15 +575,14 @@ class _ActionTile extends StatelessWidget {
                     style: AppText.button(color: palette.bone, size: 12),
                   ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppText.body(size: 12.5, color: palette.ash)),
+                  Text(
+                    subtitle,
+                    style: AppText.body(size: 12.5, color: palette.ash),
+                  ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_rounded,
-              color: palette.ash,
-              size: 16,
-            ),
+            Icon(Icons.arrow_forward_rounded, color: palette.ash, size: 16),
           ],
         ),
       ),

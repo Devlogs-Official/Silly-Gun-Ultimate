@@ -1,9 +1,14 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:silly_gun_ultimate/screens/main_navigation_screen.dart';
 import 'package:video_player/video_player.dart';
 
+import '../core/app_logger.dart';
+import '../core/config/config_manager.dart';
+import '../firebase_options.dart';
+import '../services/ads_service.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/app_typography.dart';
 
@@ -17,13 +22,16 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   static const Duration _splashDuration = Duration(seconds: 3);
+  static const Duration _appOpenLoadTimeout = Duration(seconds: 8);
+  static const Duration _appOpenShowTimeout = Duration(seconds: 10);
 
   late final VideoPlayerController _controller;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _titleSlide;
+  late final Future<void> _minimumSplashFuture;
+  late final Future<bool> _startupFuture;
 
-  Timer? _navigationTimer;
   bool _navigated = false;
 
   @override
@@ -50,25 +58,62 @@ class _SplashScreenState extends State<SplashScreen>
       curve: const Interval(0.25, 1, curve: Curves.easeOut),
     );
 
-    _titleSlide = Tween<Offset>(
-      begin: const Offset(0, 0.25),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.1, 1, curve: Curves.easeOutCubic),
-      ),
-    );
+    _titleSlide = Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.1, 1, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _animationController.forward();
 
-    _navigationTimer = Timer(_splashDuration, _navigate);
+    _minimumSplashFuture = Future<void>.delayed(_splashDuration);
+    _startupFuture = _initializeStartup();
+    unawaited(_navigateWhenReady());
   }
 
-  void _navigate() {
+  Future<bool> _initializeStartup() async {
+    try {
+      await _initializeFirebaseIfNeeded();
+      await ConfigManager.instance.fetchAndActivateRemoteConfig();
+      return AdService.preloadSplashAds().timeout(
+        _appOpenLoadTimeout,
+        onTimeout: () {
+          unawaited(AdService.loadAppOpenAd());
+          return false;
+        },
+      );
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Splash startup initialization failed',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  Future<void> _initializeFirebaseIfNeeded() async {
+    if (Firebase.apps.isNotEmpty) {
+      return;
+    }
+
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
+
+  Future<void> _navigateWhenReady() async {
     if (_navigated || !mounted) return;
+    await _minimumSplashFuture;
+    final bool appOpenLoaded = await _startupFuture;
+    if (_navigated || !mounted) return;
+
     _navigated = true;
-    _navigationTimer?.cancel();
+    await _showColdStartAppOpenIfReady(appOpenLoaded);
+    if (!mounted) return;
+
     Navigator.pushReplacement(
       context,
       PageRouteBuilder<void>(
@@ -81,9 +126,21 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
+  Future<void> _showColdStartAppOpenIfReady(bool appOpenLoaded) async {
+    if (!ConfigManager.config.showAppOpenOnColdStart ||
+        !appOpenLoaded ||
+        !AdService.isAppOpenAdAvailable) {
+      return;
+    }
+
+    await AdService.showAppOpenAdAndWait(loadTimeout: Duration.zero).timeout(
+      _appOpenShowTimeout,
+      onTimeout: () => AppOpenAdShowResult.notReady,
+    );
+  }
+
   @override
   void dispose() {
-    _navigationTimer?.cancel();
     _controller.dispose();
     _animationController.dispose();
     super.dispose();
@@ -95,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: AppColors.ink,
       body: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: _navigate,
+        onTap: () => unawaited(_navigateWhenReady()),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -165,7 +222,9 @@ class _SplashScreenState extends State<SplashScreen>
                                 Text(
                                   'COLLECTION · 2026',
                                   style: AppText.eyebrow(
-                                    color: AppColors.bone.withValues(alpha: 0.75),
+                                    color: AppColors.bone.withValues(
+                                      alpha: 0.75,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -222,10 +281,7 @@ class _SplashScreenState extends State<SplashScreen>
                           const SizedBox(width: 14),
                           Text(
                             'LOADING GALLERY',
-                            style: AppText.mono(
-                              size: 10,
-                              color: AppColors.ash,
-                            ),
+                            style: AppText.mono(size: 10, color: AppColors.ash),
                           ),
                         ],
                       ),
@@ -235,10 +291,7 @@ class _SplashScreenState extends State<SplashScreen>
                       opacity: _fadeAnimation,
                       child: Text(
                         'TAP TO ENTER',
-                        style: AppText.mono(
-                          size: 10,
-                          color: AppColors.smoke,
-                        ),
+                        style: AppText.mono(size: 10, color: AppColors.smoke),
                       ),
                     ),
                     const SizedBox(height: 60),

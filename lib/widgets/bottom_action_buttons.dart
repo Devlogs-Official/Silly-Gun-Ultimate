@@ -9,11 +9,17 @@ class BottomActionButtons extends StatelessWidget {
     required this.onShare,
     required this.onApply,
     required this.isApplying,
+    this.applyLabel = 'APPLY WALLPAPER',
+    this.busyLabel = 'APPLYING',
+    this.applyIcon = Icons.bolt_rounded,
   });
 
   final VoidCallback onShare;
   final VoidCallback onApply;
   final bool isApplying;
+  final String applyLabel;
+  final String busyLabel;
+  final IconData applyIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +47,10 @@ class BottomActionButtons extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: isApplying ? null : onApply,
                   icon: Icon(
-                    isApplying
-                        ? Icons.hourglass_top_rounded
-                        : Icons.bolt_rounded,
+                    isApplying ? Icons.hourglass_top_rounded : applyIcon,
                     size: 16,
                   ),
-                  label: Text(
-                    isApplying ? 'APPLYING' : 'APPLY WALLPAPER',
-                  ),
+                  label: Text(isApplying ? busyLabel : applyLabel),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(56),
                     textStyle: AppText.button(size: 13),
@@ -82,9 +84,7 @@ class _SecondaryButton extends StatelessWidget {
         onTap: onPressed,
         child: SizedBox(
           height: 56,
-          child: Center(
-            child: Icon(icon, color: palette.bone, size: 18),
-          ),
+          child: Center(child: Icon(icon, color: palette.bone, size: 18)),
         ),
       ),
     );

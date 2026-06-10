@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
+import '../core/config/config_manager.dart';
 import '../providers/wallpaper_provider.dart';
+import '../services/ads_service.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/app_palette.dart';
 import '../widgets/app_typography.dart';
@@ -63,10 +65,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   List<Widget> get _screens => <Widget>[
-        HomeScreen(onOpenLiveTab: () => setState(() => _selectedIndex = 1)),
-        const LiveWallpapersScreen(),
-        const FavoritesScreen(),
-      ];
+    HomeScreen(onOpenLiveTab: () => setState(() => _selectedIndex = 1)),
+    const LiveWallpapersScreen(),
+    const FavoritesScreen(),
+  ];
 
   @override
   void initState() {
@@ -98,12 +100,22 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: _screens[_selectedIndex],
           ),
         ),
-        bottomNavigationBar: _FloatingNavBar(
-          selectedIndex: _selectedIndex,
-          onTap: (index) {
-            if (index == _selectedIndex) return;
-            setState(() => _selectedIndex = index);
-          },
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_selectedIndex == 2 &&
+                ConfigManager.config.showAds &&
+                ConfigManager.config.showBannerAds &&
+                ConfigManager.config.showBannerOnFavoritesScreen)
+              const BannerAdWidget(),
+            _FloatingNavBar(
+              selectedIndex: _selectedIndex,
+              onTap: (index) {
+                if (index == _selectedIndex) return;
+                setState(() => _selectedIndex = index);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -184,8 +196,9 @@ class _FloatingNavBar extends StatelessWidget {
                         boxShadow: selected
                             ? [
                                 BoxShadow(
-                                  color: AppColors.crimson
-                                      .withValues(alpha: 0.35),
+                                  color: AppColors.crimson.withValues(
+                                    alpha: 0.35,
+                                  ),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),

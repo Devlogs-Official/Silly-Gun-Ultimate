@@ -11,7 +11,9 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/app_constants.dart';
 import '../../core/app_logger.dart';
+import '../../core/config/config_manager.dart';
 import '../../models/wallpaper_model.dart';
+import '../../services/ads_service.dart';
 import '../../services/wallpaper_apply_service.dart';
 import '../../widgets/app_colors.dart';
 import '../../widgets/app_palette.dart';
@@ -30,17 +32,23 @@ class FullscreenPreviewScreen extends StatefulWidget {
 }
 
 class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
+  static final Set<int> _sessionUnlockedLiveWallpaperIds = <int>{};
+
   VideoPlayerController? _controller;
   final WallpaperApplyService _applyService = WallpaperApplyService();
   bool _ready = false;
   bool _hasError = false;
   bool _isApplying = false;
   bool _isSharing = false;
+  bool _isUnlocking = false;
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+    if (_shouldRequireRewardedUnlock()) {
+      unawaited(AdService.loadRewardedAd());
+    }
     _initialize();
   }
 
@@ -160,6 +168,87 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     }
   }
 
+  Future<void> _handleApplyTap() async {
+    if (_isApplying || _isUnlocking) return;
+    if (_isLiveWallpaperUnlocked) {
+      await _applyWallpaper();
+      return;
+    }
+
+    final bool wantsUnlock = await _showUnlockDialog() ?? false;
+    if (!wantsUnlock || !mounted) return;
+
+    setState(() => _isUnlocking = true);
+    final RewardedAdShowResult result = await AdService.showRewardedAd(
+      loadTimeout: const Duration(seconds: 90),
+    );
+    if (!mounted) return;
+
+    if (result != RewardedAdShowResult.rewarded) {
+      setState(() => _isUnlocking = false);
+      AppSnackbar.warning(
+        result == RewardedAdShowResult.dismissedWithoutReward
+            ? 'Watch the full ad to unlock this live wallpaper.'
+            : 'Rewarded ad was not available. Please try again.',
+      );
+      return;
+    }
+
+    _sessionUnlockedLiveWallpaperIds.add(widget.wallpaper.id);
+    setState(() => _isUnlocking = false);
+    AppSnackbar.success('Wallpaper unlocked. Applying wallpaper...');
+    await _applyWallpaper();
+  }
+
+  bool get _isLiveWallpaperUnlocked {
+    return !_shouldRequireRewardedUnlock() ||
+        _sessionUnlockedLiveWallpaperIds.contains(widget.wallpaper.id);
+  }
+
+  bool _shouldRequireRewardedUnlock() {
+    return ConfigManager.config.showAds && ConfigManager.config.showRewardedAds;
+  }
+
+  Future<bool?> _showUnlockDialog() {
+    return showDialog<bool>(
+      context: context,
+      barrierColor: const Color(0xAA000000),
+      builder: (ctx) {
+        final palette = ctx.palette;
+        return AlertDialog(
+          backgroundColor: palette.obsidian,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+            side: BorderSide(color: palette.hairline),
+          ),
+          title: Text(
+            'UNLOCK LIVE WALLPAPER',
+            style: AppText.display(
+              size: 20,
+              letterSpacing: 1.4,
+              color: palette.bone,
+            ),
+          ),
+          content: Text(
+            'Watch a rewarded ad to unlock this live wallpaper for this session.',
+            style: AppText.body(color: palette.ash),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('CANCEL'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('UNLOCK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showApplyingDialog() {
     showDialog<void>(
       context: context,
@@ -270,9 +359,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
               color: Colors.black.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(50),
-                side: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.2),
-                ),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(50),
@@ -305,11 +392,16 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
         ],
       ),
       bottomNavigationBar: BottomActionButtons(
-        isApplying: _isApplying,
+        isApplying: _isApplying || _isUnlocking,
         onShare: () {
           if (!_isSharing) _shareWallpaper();
         },
-        onApply: _applyWallpaper,
+        onApply: _handleApplyTap,
+        applyLabel: _isLiveWallpaperUnlocked ? 'APPLY WALLPAPER' : 'UNLOCK',
+        busyLabel: _isUnlocking ? 'UNLOCKING' : 'APPLYING',
+        applyIcon: _isLiveWallpaperUnlocked
+            ? Icons.bolt_rounded
+            : Icons.lock_open_rounded,
       ),
     );
   }
@@ -341,10 +433,7 @@ class _LoadingPill extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             'LOADING MOTION',
-            style: AppText.mono(
-              size: 10.5,
-              color: const Color(0xFFF5F1E8),
-            ),
+            style: AppText.mono(size: 10.5, color: const Color(0xFFF5F1E8)),
           ),
         ],
       ),
@@ -380,10 +469,7 @@ class _ErrorPill extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'RETRY MOTION',
-                style: AppText.button(
-                  size: 11,
-                  color: const Color(0xFFF5F1E8),
-                ),
+                style: AppText.button(size: 11, color: const Color(0xFFF5F1E8)),
               ),
             ],
           ),

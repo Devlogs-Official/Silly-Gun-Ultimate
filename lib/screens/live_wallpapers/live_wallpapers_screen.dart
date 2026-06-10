@@ -156,7 +156,8 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 14,
                         crossAxisSpacing: 14,
-                        itemCount: provider.wallpapers.length +
+                        itemCount:
+                            provider.wallpapers.length +
                             (provider.isLoadingMore ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index >= provider.wallpapers.length) {
@@ -230,11 +231,7 @@ class _EmptyState extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.26),
-          const Icon(
-            Icons.movie_outlined,
-            color: AppColors.crimson,
-            size: 52,
-          ),
+          const Icon(Icons.movie_outlined, color: AppColors.crimson, size: 52),
           const SizedBox(height: 16),
           Text(
             'NOTHING LIVE YET',

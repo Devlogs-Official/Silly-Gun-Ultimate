@@ -121,7 +121,9 @@ class _HomeScreenState extends State<HomeScreen> {
             if (provider.isLoadingFor(isLive: false) && noData) {
               return Column(
                 children: [
-                  _AppBar(onOpenDrawer: () => Scaffold.of(context).openDrawer()),
+                  _AppBar(
+                    onOpenDrawer: () => Scaffold.of(context).openDrawer(),
+                  ),
                   const Expanded(child: ShimmerGrid()),
                 ],
               );
@@ -181,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisCount: 2,
                         mainAxisSpacing: 14,
                         crossAxisSpacing: 14,
-                        itemCount: wallpapers.length +
+                        itemCount:
+                            wallpapers.length +
                             (provider.hasMoreFor(isLive: false) ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index >= wallpapers.length) {
@@ -248,10 +251,7 @@ class _AppBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(22, 16, 22, 6),
       child: Row(
         children: [
-          _IconChip(
-            icon: Icons.menu_rounded,
-            onTap: onOpenDrawer,
-          ),
+          _IconChip(icon: Icons.menu_rounded, onTap: onOpenDrawer),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -259,10 +259,7 @@ class _AppBar extends StatelessWidget {
               children: [
                 Text(
                   'SILLY SMILE',
-                  style: AppText.eyebrow(
-                    color: palette.bone,
-                    letterSpacing: 3,
-                  ),
+                  style: AppText.eyebrow(color: palette.bone, letterSpacing: 3),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -305,9 +302,7 @@ class _IconChip extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Center(
-            child: Icon(icon, color: palette.bone, size: 18),
-          ),
+          child: Center(child: Icon(icon, color: palette.bone, size: 18)),
         ),
       ),
     );
@@ -412,11 +407,7 @@ class _EmptyState extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: MediaQuery.sizeOf(context).height * 0.26),
-          const Icon(
-            Icons.image_outlined,
-            color: AppColors.crimson,
-            size: 52,
-          ),
+          const Icon(Icons.image_outlined, color: AppColors.crimson, size: 52),
           const SizedBox(height: 16),
           Text(
             'NO WALLPAPERS YET',

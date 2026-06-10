@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../core/app_exceptions.dart';
 import '../core/app_logger.dart';
+import '../core/config/config_manager.dart';
 import '../models/wallpaper_model.dart';
 import '../models/wallpapers_response.dart';
 
@@ -28,8 +29,6 @@ class WallpaperPage {
 class WallpaperService {
   WallpaperService({http.Client? client}) : _client = client ?? http.Client();
 
-  static const String _baseUrl =
-      'https://api.devlogs.pro/apps/sillySmileStaticLiveWallpapers/get_silly_wallpapers.php';
   static const Duration _timeout = Duration(seconds: 15);
 
   final http.Client _client;
@@ -39,7 +38,12 @@ class WallpaperService {
     int pageSize = 20,
     bool isLive = true,
   }) async {
-    final uri = Uri.parse(_baseUrl).replace(
+    final String baseUrl = ConfigManager.config.apiBaseUrl.trim();
+    if (baseUrl.isEmpty) {
+      throw const ApiException('Wallpaper service is not configured yet.');
+    }
+
+    final uri = Uri.parse("$baseUrl/get_silly_wallpapers.php").replace(
       queryParameters: {
         'is_live': isLive ? '1' : '0',
         'page': page.toString(),

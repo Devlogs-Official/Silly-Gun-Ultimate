@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import 'core/app_logger.dart';
@@ -16,43 +17,51 @@ import 'widgets/app_colors.dart';
 import 'widgets/app_palette.dart';
 import 'widgets/app_snackbar.dart';
 import 'widgets/app_typography.dart';
+import 'core/config/config_manager.dart';
+import 'services/ads_service.dart';
+import 'services/app_open_manager.dart';
 
 Future<void> main() async {
-  await runZonedGuarded<Future<void>>(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
-      ErrorHandler.initialize();
+  await runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    ErrorHandler.initialize();
+    await MobileAds.instance.initialize();
+    await MobileAds.instance.updateRequestConfiguration(
+      RequestConfiguration(
+        testDeviceIds: <String>[
+          '9B9386F85AF0FC76B9DDB4A4E8622406',
+        ],
+      ),
+    );
 
-      final cacheService = WallpaperCacheService();
-      try {
-        await cacheService.init();
-      } catch (error, stackTrace) {
-        AppLogger.error(
-          'Hive cache initialization failed',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
-
-      final connectivityService = ConnectivityService();
-      await connectivityService.initialize();
-
-      final settingsService = SettingsService();
-      await settingsService.load();
-
-      runApp(
-        SillyGunWallpapersApp(
-          cacheService: cacheService,
-          connectivityService: connectivityService,
-          settingsService: settingsService,
-        ),
+    final cacheService = WallpaperCacheService();
+    try {
+      await cacheService.init();
+    } catch (error, stackTrace) {
+      AppLogger.error(
+        'Hive cache initialization failed',
+        error: error,
+        stackTrace: stackTrace,
       );
-    },
-    ErrorHandler.handleZoneError,
-  );
+    }
+
+    final connectivityService = ConnectivityService();
+    await connectivityService.initialize();
+
+    final settingsService = SettingsService();
+    await settingsService.load();
+
+    runApp(
+      SillyGunWallpapersApp(
+        cacheService: cacheService,
+        connectivityService: connectivityService,
+        settingsService: settingsService,
+      ),
+    );
+  }, ErrorHandler.handleZoneError);
 }
 
-class SillyGunWallpapersApp extends StatelessWidget {
+class SillyGunWallpapersApp extends StatefulWidget {
   const SillyGunWallpapersApp({
     super.key,
     required this.cacheService,
@@ -65,15 +74,74 @@ class SillyGunWallpapersApp extends StatelessWidget {
   final SettingsService settingsService;
 
   @override
+  State<SillyGunWallpapersApp> createState() => _SillyGunWallpapersAppState();
+}
+
+class _SillyGunWallpapersAppState extends State<SillyGunWallpapersApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    AdService.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      AppOpenManager.instance.onPaused(
+        isShowingFullScreenAd: AdService.isShowingFullScreenAd,
+      );
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      _showAppOpenOnResume();
+    }
+  }
+
+  Future<void> _showAppOpenOnResume() async {
+    final config = ConfigManager.config;
+    final shouldShow = AppOpenManager.instance.shouldShowOnResume(
+      config: config,
+      isShowingFullScreenAd: AdService.isShowingFullScreenAd,
+    );
+
+    if (!shouldShow) {
+      return;
+    }
+
+    if (!AdService.isAppOpenAdAvailable) {
+      unawaited(AdService.loadAppOpenAd());
+      return;
+    }
+
+    await AdService.showAppOpenAdAndWait(
+      loadTimeout: Duration.zero,
+      respectMinInterval: true,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ConnectivityService>(
-          create: (_) => connectivityService,
+          create: (_) => widget.connectivityService,
         ),
-        ChangeNotifierProvider<SettingsService>.value(value: settingsService),
+        ChangeNotifierProvider<SettingsService>.value(
+          value: widget.settingsService,
+        ),
         ChangeNotifierProvider(
-          create: (_) => WallpaperProvider(cacheService: cacheService),
+          create: (_) => WallpaperProvider(cacheService: widget.cacheService),
         ),
         ChangeNotifierProvider(
           create: (_) => FavoritesProvider()..loadFavorites(),
@@ -102,8 +170,8 @@ class SillyGunWallpapersApp extends StatelessWidget {
                   systemNavigationBarColor: palette.ink,
                   systemNavigationBarIconBrightness:
                       brightness == Brightness.dark
-                          ? Brightness.light
-                          : Brightness.dark,
+                      ? Brightness.light
+                      : Brightness.dark,
                 ),
               );
               return child ?? const SizedBox.shrink();

@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "47529025014",
+    "project_id": "devlogs-config",
+    "storage_bucket": "devlogs-config.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47529025014:android:fb24837f6744f34081bbd7",
+        "android_client_info": {
+          "package_name": "pro.devlogs.animewallpaper.hd"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNsCz2m_O11dTXb6iyXFMIuEmEgcB20QM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47529025014:android:5349909e8dc5c19881bbd7",
+        "android_client_info": {
+          "package_name": "pro.devlogs.eidwallpaper.livewallpaper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNsCz2m_O11dTXb6iyXFMIuEmEgcB20QM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:47529025014:android:6a43dd939fc4e8a681bbd7",
+        "android_client_info": {
+          "package_name": "pro.devlogs.sillysmilegun.wallpaper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNsCz2m_O11dTXb6iyXFMIuEmEgcB20QM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

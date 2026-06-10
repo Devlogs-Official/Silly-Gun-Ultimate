@@ -10,7 +10,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:silly_gun_ultimate/core/app_constants.dart';
 
 import '../../core/app_logger.dart';
+import '../../core/config/config_manager.dart';
 import '../../models/wallpaper_model.dart';
+import '../../services/ads_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/wallpaper_apply_service.dart';
 import '../../widgets/app_colors.dart';
@@ -117,8 +119,27 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
   }
 
   Future<void> _showWallpaperOptions() async {
-    final target = context.read<SettingsService>().applyTarget;
-    await _applyWallpaper(target.wallpaperManagerLocation);
+    if (_isApplying) return;
+    if (ConfigManager.config.showAds &&
+        ConfigManager.config.showInterstitialAds &&
+        ConfigManager.config.showInterstitialOnApplyWallpaper) {
+      await AdService.showInterstitialAd();
+      if (!mounted) return;
+    }
+
+    final selectedTarget = await showModalBottomSheet<ApplyTarget>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.58),
+      builder: (ctx) {
+        return _ApplyTargetSheet(
+          currentTarget: context.read<SettingsService>().applyTarget,
+        );
+      },
+    );
+    if (!mounted || selectedTarget == null) return;
+
+    await _applyWallpaper(selectedTarget.wallpaperManagerLocation);
   }
 
   void _showApplyingDialog() {
@@ -183,11 +204,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
               height: double.infinity,
               placeholder: (_, _) => const VideoLoader(borderRadius: 0),
               errorWidget: (_, _, _) => Center(
-                child: Icon(
-                  Icons.broken_image,
-                  color: palette.ash,
-                  size: 40,
-                ),
+                child: Icon(Icons.broken_image, color: palette.ash, size: 40),
               ),
             ),
             Positioned(
@@ -197,9 +214,7 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
                 color: Colors.black.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(50),
-                  side: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(50),
@@ -227,6 +242,132 @@ class _StaticFullScreenPreviewState extends State<StaticFullScreenPreview> {
           }
         },
         onApply: _showWallpaperOptions,
+      ),
+    );
+  }
+}
+
+class _ApplyTargetSheet extends StatelessWidget {
+  const _ApplyTargetSheet({required this.currentTarget});
+
+  final ApplyTarget currentTarget;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return SafeArea(
+      top: false,
+      child: Container(
+        decoration: BoxDecoration(
+          color: palette.ink,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+          border: Border(top: BorderSide(color: palette.hairline)),
+        ),
+        padding: const EdgeInsets.fromLTRB(22, 18, 22, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(width: 22, height: 2, color: AppColors.crimson),
+                const SizedBox(width: 10),
+                Text('APPLY TO', style: AppText.eyebrow(color: palette.ash)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'CHOOSE SCREEN',
+              style: AppText.display(
+                size: 26,
+                letterSpacing: 1.2,
+                color: palette.bone,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _ApplyTargetTile(
+              icon: Icons.home_rounded,
+              label: 'HOME SCREEN',
+              selected: currentTarget == ApplyTarget.home,
+              onTap: () => Navigator.of(context).pop(ApplyTarget.home),
+            ),
+            const SizedBox(height: 10),
+            _ApplyTargetTile(
+              icon: Icons.lock_rounded,
+              label: 'LOCK SCREEN',
+              selected: currentTarget == ApplyTarget.lock,
+              onTap: () => Navigator.of(context).pop(ApplyTarget.lock),
+            ),
+            const SizedBox(height: 10),
+            _ApplyTargetTile(
+              icon: Icons.phone_android_rounded,
+              label: 'BOTH SCREENS',
+              selected: currentTarget == ApplyTarget.both,
+              onTap: () => Navigator.of(context).pop(ApplyTarget.both),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ApplyTargetTile extends StatelessWidget {
+  const _ApplyTargetTile({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Material(
+      color: selected ? AppColors.crimson : palette.obsidian,
+      borderRadius: BorderRadius.circular(2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(2),
+        onTap: onTap,
+        child: Container(
+          height: 58,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            border: Border.all(
+              color: selected ? AppColors.crimson : palette.hairline,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: selected ? const Color(0xFFF5F1E8) : AppColors.crimson,
+                size: 20,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppText.button(
+                    color: selected ? const Color(0xFFF5F1E8) : palette.bone,
+                    size: 12,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_rounded,
+                color: selected ? const Color(0xFFF5F1E8) : palette.ash,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
