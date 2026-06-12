@@ -18,12 +18,10 @@ class AppConfig {
   static const String showRewardedAdsKey = 'show_rewarded_ads';
   static const String gridBannerIntervalKey = 'grid_banner_interval';
   static const String enableAdaptiveBannerKey = 'enable_adaptive_banner';
-  static const String enableCollapsibleBannerKey =
-      'enable_collapsible_banner';
+  static const String enableCollapsibleBannerKey = 'enable_collapsible_banner';
   static const String collapsibleBannerPositionKey =
       'collapsible_banner_position';
-  static const String showBannerOnHomeScreenKey =
-      'show_banner_on_home_screen';
+  static const String showBannerOnHomeScreenKey = 'show_banner_on_home_screen';
   static const String showBannerInWallpaperGridKey =
       'show_banner_in_wallpaper_grid';
   static const String showBannerOnFavoritesScreenKey =
@@ -32,8 +30,7 @@ class AppConfig {
       'show_interstitial_on_apply_wallpaper';
   static const String showRewardedOnLiveWallpaperUnlockKey =
       'show_rewarded_on_live_wallpaper_unlock';
-  static const String showAppOpenOnColdStartKey =
-      'show_app_open_on_cold_start';
+  static const String showAppOpenOnColdStartKey = 'show_app_open_on_cold_start';
   static const String showAppOpenOnResumeKey = 'show_app_open_on_resume';
   static const String appOpenMinIntervalSecondsKey =
       'app_open_min_interval_seconds';
@@ -132,10 +129,10 @@ class AppConfig {
     showRewardedOnLiveWallpaperUnlock: true,
     showAppOpenOnColdStart: true,
     showAppOpenOnResume: true,
-    appOpenMinIntervalSeconds: 15,
+    appOpenMinIntervalSeconds: 1800,
     showShareTextOnStaticWallpaper: true,
     showShareTextOnLiveWallpaper: true,
-    backgroundThresholdSeconds: 5,
+    backgroundThresholdSeconds: 1800,
     persistUnlockedWallpapers: false,
     enableGridSquareBanner: false,
   );
@@ -161,14 +158,13 @@ class AppConfig {
     showBannerInWallpaperGridKey: defaults.showBannerInWallpaperGrid,
     showBannerOnFavoritesScreenKey: defaults.showBannerOnFavoritesScreen,
     showInterstitialOnApplyWallpaperKey:
-    defaults.showInterstitialOnApplyWallpaper,
+        defaults.showInterstitialOnApplyWallpaper,
     showRewardedOnLiveWallpaperUnlockKey:
-    defaults.showRewardedOnLiveWallpaperUnlock,
+        defaults.showRewardedOnLiveWallpaperUnlock,
     showAppOpenOnColdStartKey: defaults.showAppOpenOnColdStart,
     showAppOpenOnResumeKey: defaults.showAppOpenOnResume,
     appOpenMinIntervalSecondsKey: defaults.appOpenMinIntervalSeconds,
-    showShareTextOnStaticWallpaperKey:
-    defaults.showShareTextOnStaticWallpaper,
+    showShareTextOnStaticWallpaperKey: defaults.showShareTextOnStaticWallpaper,
     showShareTextOnLiveWallpaperKey: defaults.showShareTextOnLiveWallpaper,
     backgroundThresholdSecondsKey: defaults.backgroundThresholdSeconds,
     persistUnlockedWallpapersKey: defaults.persistUnlockedWallpapers,
@@ -178,12 +174,15 @@ class AppConfig {
   factory AppConfig.fromRemoteConfig(FirebaseRemoteConfig remoteConfig) {
     final AppConfig fallback = AppConfig.defaults;
     final Map<String, dynamic> legacyConfig = _readLegacyConfig(remoteConfig);
-    final Map<String, dynamic> legacyAds =
-    _asMap(_asMap(legacyConfig['ads'])['android']);
-    final Map<String, dynamic> legacyFeatures =
-    _asMap(legacyConfig['features']);
-    final Map<String, dynamic> legacyAdSettings =
-    _asMap(legacyConfig['adSettings']);
+    final Map<String, dynamic> legacyAds = _asMap(
+      _asMap(legacyConfig['ads'])['android'],
+    );
+    final Map<String, dynamic> legacyFeatures = _asMap(
+      legacyConfig['features'],
+    );
+    final Map<String, dynamic> legacyAdSettings = _asMap(
+      legacyConfig['adSettings'],
+    );
     final Map<String, dynamic> legacyUi = _asMap(legacyConfig['ui']);
     return AppConfig(
       apiBaseUrl: _readRemoteString(
@@ -387,35 +386,35 @@ class AppConfig {
   }
 
   static String _readRemoteString(
-      FirebaseRemoteConfig remoteConfig,
-      String key,
-      String fallback,
-      ) {
+    FirebaseRemoteConfig remoteConfig,
+    String key,
+    String fallback,
+  ) {
     final String value = remoteConfig.getString(key).trim();
     return value.isEmpty ? fallback : value;
   }
 
   static bool _readRemoteBool(
-      FirebaseRemoteConfig remoteConfig,
-      String key,
-      bool fallback,
-      ) {
+    FirebaseRemoteConfig remoteConfig,
+    String key,
+    bool fallback,
+  ) {
     final RemoteConfigValue value = remoteConfig.getValue(key);
     return value.source == ValueSource.valueRemote ? value.asBool() : fallback;
   }
 
   static int _readRemoteInt(
-      FirebaseRemoteConfig remoteConfig,
-      String key,
-      int fallback,
-      ) {
+    FirebaseRemoteConfig remoteConfig,
+    String key,
+    int fallback,
+  ) {
     final RemoteConfigValue value = remoteConfig.getValue(key);
     return value.source == ValueSource.valueRemote ? value.asInt() : fallback;
   }
 
   static Map<String, dynamic> _readLegacyConfig(
-      FirebaseRemoteConfig remoteConfig,
-      ) {
+    FirebaseRemoteConfig remoteConfig,
+  ) {
     final String jsonString = remoteConfig.getString(legacyConfigJsonKey);
     if (jsonString.trim().isEmpty) {
       return <String, dynamic>{};
@@ -435,7 +434,7 @@ class AppConfig {
     }
     if (value is Map) {
       return value.map(
-            (dynamic key, dynamic val) => MapEntry(key.toString(), val),
+        (dynamic key, dynamic val) => MapEntry(key.toString(), val),
       );
     }
     return <String, dynamic>{};

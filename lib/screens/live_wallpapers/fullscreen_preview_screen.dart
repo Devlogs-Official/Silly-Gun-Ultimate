@@ -178,6 +178,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     final bool wantsUnlock = await _showUnlockDialog() ?? false;
     if (!wantsUnlock || !mounted) return;
 
+    debugPrint('AdService: Unlock Started. wallpaperId=${widget.wallpaper.id}');
     setState(() => _isUnlocking = true);
     final RewardedAdShowResult result = await AdService.showRewardedAd(
       loadTimeout: const Duration(seconds: 90),
@@ -185,6 +186,10 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     if (!mounted) return;
 
     if (result != RewardedAdShowResult.rewarded) {
+      debugPrint(
+        'AdService: Unlock Failed. wallpaperId=${widget.wallpaper.id}, '
+        'reason=$result',
+      );
       setState(() => _isUnlocking = false);
       AppSnackbar.warning(
         result == RewardedAdShowResult.dismissedWithoutReward
@@ -195,6 +200,7 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
     }
 
     _sessionUnlockedLiveWallpaperIds.add(widget.wallpaper.id);
+    debugPrint('AdService: Unlock Success. wallpaperId=${widget.wallpaper.id}');
     setState(() => _isUnlocking = false);
     AppSnackbar.success('Wallpaper unlocked. Applying wallpaper...');
     await _applyWallpaper();
@@ -206,7 +212,9 @@ class _FullscreenPreviewScreenState extends State<FullscreenPreviewScreen> {
   }
 
   bool _shouldRequireRewardedUnlock() {
-    return ConfigManager.config.showAds && ConfigManager.config.showRewardedAds;
+    return ConfigManager.config.showAds &&
+        ConfigManager.config.showRewardedAds &&
+        ConfigManager.config.showRewardedOnLiveWallpaperUnlock;
   }
 
   Future<bool?> _showUnlockDialog() {

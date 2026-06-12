@@ -9,6 +9,7 @@ import '../core/app_logger.dart';
 import '../core/config/config_manager.dart';
 import '../firebase_options.dart';
 import '../services/ads_service.dart';
+import '../services/app_open_manager.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/app_typography.dart';
 
@@ -77,12 +78,9 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       await _initializeFirebaseIfNeeded();
       await ConfigManager.instance.fetchAndActivateRemoteConfig();
-      return AdService.preloadSplashAds().timeout(
+      return AdService.loadAppOpenAd().timeout(
         _appOpenLoadTimeout,
-        onTimeout: () {
-          unawaited(AdService.loadAppOpenAd());
-          return false;
-        },
+        onTimeout: () => false,
       );
     } catch (error, stackTrace) {
       AppLogger.error(
@@ -128,8 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _showColdStartAppOpenIfReady(bool appOpenLoaded) async {
     if (!ConfigManager.config.showAppOpenOnColdStart ||
-        !appOpenLoaded ||
-        !AdService.isAppOpenAdAvailable) {
+        !appOpenLoaded) {
       return;
     }
 

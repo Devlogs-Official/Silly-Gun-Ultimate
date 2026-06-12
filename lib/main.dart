@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
 
 import 'core/app_logger.dart';
@@ -25,15 +24,7 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
     ErrorHandler.initialize();
-    await MobileAds.instance.initialize();
-    await MobileAds.instance.updateRequestConfiguration(
-      RequestConfiguration(
-        testDeviceIds: <String>[
-          '9B9386F85AF0FC76B9DDB4A4E8622406',
-        ],
-      ),
-    );
-
+    // await AdService.initialize();
     final cacheService = WallpaperCacheService();
     try {
       await cacheService.init();
@@ -116,11 +107,6 @@ class _SillyGunWallpapersAppState extends State<SillyGunWallpapersApp>
     );
 
     if (!shouldShow) {
-      return;
-    }
-
-    if (!AdService.isAppOpenAdAvailable) {
-      unawaited(AdService.loadAppOpenAd());
       return;
     }
 
