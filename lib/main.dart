@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
+import 'core/ads/consent_manager.dart';
 import 'core/app_logger.dart';
 import 'core/error_handler.dart';
+import 'firebase_options.dart';
 import 'providers/wallpaper_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'screens/splash_screen.dart';
@@ -24,7 +27,11 @@ Future<void> main() async {
   await runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
     ErrorHandler.initialize();
-    // await AdService.initialize();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await ConsentManager.initializeConsent();
+    await AdService.initialize();
     final cacheService = WallpaperCacheService();
     try {
       await cacheService.init();

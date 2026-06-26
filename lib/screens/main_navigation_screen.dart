@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../core/config/config_manager.dart';
 import '../providers/wallpaper_provider.dart';
 import '../services/ads_service.dart';
 import '../widgets/app_colors.dart';
@@ -103,11 +102,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         bottomNavigationBar: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (_selectedIndex == 2 &&
-                ConfigManager.config.showAds &&
-                ConfigManager.config.showBannerAds &&
-                ConfigManager.config.showBannerOnFavoritesScreen)
-              const BannerAdWidget(),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(14, 0, 14, 8),
+              child: CollapsibleAdWidget(horizontalPadding: 28),
+            ),
             _FloatingNavBar(
               selectedIndex: _selectedIndex,
               onTap: (index) {

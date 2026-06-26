@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:silly_gun_ultimate/screens/static_wallpapers/static_preview_screen.dart';
 
+import '../core/config/config_manager.dart';
 import '../models/wallpaper_model.dart';
 import '../providers/favorites_provider.dart';
 import '../widgets/app_colors.dart';
@@ -10,6 +10,7 @@ import '../widgets/app_palette.dart';
 import '../widgets/app_typography.dart';
 import '../widgets/section_label.dart';
 import '../widgets/wallpaper_grid_item.dart';
+import '../widgets/wallpaper_grid_with_native_ads.dart';
 import 'live_wallpapers/wallpaper_preview_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -25,10 +26,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   Widget build(BuildContext context) {
     final favorites = context.watch<FavoritesProvider>().favorites;
-    final staticFavorites =
-        favorites.where((item) => !item.isLive).toList(growable: false);
-    final liveFavorites =
-        favorites.where((item) => item.isLive).toList(growable: false);
+    final staticFavorites = favorites
+        .where((item) => !item.isLive)
+        .toList(growable: false);
+    final liveFavorites = favorites
+        .where((item) => item.isLive)
+        .toList(growable: false);
 
     final activeList = _tabIndex == 0 ? staticFavorites : liveFavorites;
     final palette = context.palette;
@@ -58,11 +61,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               onChange: (i) => setState(() => _tabIndex = i),
             ),
             const SizedBox(height: 14),
-            Expanded(child: _FavoritesGrid(items: activeList)),
+            Expanded(
+              child: _FavoritesGrid(
+                items: activeList,
+                showNativeAds: _showFavoritesNativeAd,
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  bool get _showFavoritesNativeAd {
+    final config = ConfigManager.config;
+    return config.showAds &&
+        config.showNativeAds &&
+        config.enableNativeAds &&
+        config.showNativeOnFavoritesScreen;
   }
 }
 
@@ -158,9 +174,10 @@ class _SegmentedTabs extends StatelessWidget {
 }
 
 class _FavoritesGrid extends StatelessWidget {
-  const _FavoritesGrid({required this.items});
+  const _FavoritesGrid({required this.items, required this.showNativeAds});
 
   final List<WallpaperModel> items;
+  final bool showNativeAds;
 
   @override
   Widget build(BuildContext context) {
@@ -200,15 +217,14 @@ class _FavoritesGrid extends StatelessWidget {
       );
     }
 
-    return MasonryGridView.count(
-      physics: const BouncingScrollPhysics(),
+    return WallpaperGridWithNativeAds(
+      scrollable: true,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 130),
-      crossAxisCount: 2,
-      mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final wallpaper = items[index];
+      wallpapers: items,
+      showNativeAds: showNativeAds,
+      nativeInterval: ConfigManager.config.gridNativeInterval,
+      nativePlacement: 'favorites_grid',
+      itemBuilder: (context, wallpaper, index) {
         return WallpaperGridItem(
           key: ValueKey('fav-${wallpaper.id}'),
           wallpaper: wallpaper,

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/wallpaper_model.dart';
+import '../../core/config/config_manager.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
@@ -16,6 +15,7 @@ import '../../widgets/retry_widget.dart';
 import '../../widgets/section_label.dart';
 import '../../widgets/shimmer_grid.dart';
 import '../../widgets/wallpaper_grid_item.dart';
+import '../../widgets/wallpaper_grid_with_native_ads.dart';
 import '../app_drawer.dart';
 import 'live_wallpaper_card.dart';
 import 'static_preview_screen.dart';
@@ -164,6 +164,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => widget.onOpenLiveTab?.call(),
                     ),
                   ),
+                  // if (_showHomeNativeAd)
+                  //   const SliverPadding(
+                  //     padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  //     sliver: SliverToBoxAdapter(
+                  //       child: NativeAdWidget(
+                  //         placement: 'home_screen',
+                  //         height: 320,
+                  //       ),
+                  //     ),
+                  //   ),
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(22, 24, 22, 10),
                     sliver: SliverToBoxAdapter(
@@ -177,34 +187,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 18, 16, 130),
                     sliver: SliverToBoxAdapter(
-                      child: MasonryGridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        itemCount:
-                            wallpapers.length +
-                            (provider.hasMoreFor(isLive: false) ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= wallpapers.length) {
-                            if (provider.isLoadingMoreFor(isLive: false)) {
-                              return const _BottomLoaderTile();
-                            }
-                            if (provider.errorMessageFor(isLive: false) !=
-                                    null &&
-                                provider.hasMoreFor(isLive: false)) {
-                              return _LoadMoreRetryTile(
-                                onRetry: _fetchMoreWallpapers,
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          }
-                          final WallpaperModel wallpaper = wallpapers[index];
+                      child: WallpaperGridWithNativeAds(
+                        wallpapers: wallpapers,
+                        showNativeAds: _showGridNativeAds,
+                        nativeInterval: ConfigManager.config.gridNativeInterval,
+                        nativePlacement: 'home_grid',
+                        footer: provider.hasMoreFor(isLive: false)
+                            ? provider.isLoadingMoreFor(isLive: false)
+                                  ? const _BottomLoaderTile()
+                                  : provider.errorMessageFor(isLive: false) !=
+                                        null
+                                  ? _LoadMoreRetryTile(
+                                      onRetry: _fetchMoreWallpapers,
+                                    )
+                                  : const SizedBox.shrink()
+                            : null,
+                        itemBuilder: (context, wallpaper, wallpaperIndex) {
                           return WallpaperGridItem(
                             key: ValueKey('static-${wallpaper.id}'),
                             wallpaper: wallpaper,
-                            index: index,
+                            index: wallpaperIndex,
                             isFavorite: favoritesProvider.isFavorite(wallpaper),
                             onFavoriteToggle: () =>
                                 favoritesProvider.toggleFavorite(wallpaper),
@@ -214,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   builder: (_) => StaticPreviewScreen(
                                     wallpaper: wallpaper,
                                     wallpapers: wallpapers,
-                                    initialIndex: index,
+                                    initialIndex: wallpaperIndex,
                                   ),
                                 ),
                               );
@@ -236,6 +238,15 @@ class _HomeScreenState extends State<HomeScreen> {
   String _formatCount(int n) {
     final padded = n.toString().padLeft(2, '0');
     return '$padded WALLPAPERS';
+  }
+
+  bool get _showGridNativeAds {
+    final config = ConfigManager.config;
+    return config.showAds &&
+        config.showNativeAds &&
+        config.enableNativeAds &&
+        config.showNativeInWallpaperGrid &&
+        config.gridNativeInterval > 0;
   }
 }
 

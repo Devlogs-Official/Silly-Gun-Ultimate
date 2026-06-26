@@ -28,7 +28,6 @@ class WallpaperGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final palette = context.palette;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final double height = index.isEven ? 240 : 320;
 
     return Hero(
       tag: 'wallpaper-${wallpaper.id}',
@@ -39,7 +38,6 @@ class WallpaperGridItem extends StatelessWidget {
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 220),
-            height: height,
             decoration: BoxDecoration(
               color: palette.obsidian,
               borderRadius: BorderRadius.circular(4),
@@ -181,9 +179,7 @@ class _FavoriteButton extends StatelessWidget {
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
               key: ValueKey<bool>(isFavorite),
-              color: isFavorite
-                  ? AppColors.crimson
-                  : const Color(0xFFF5F1E8),
+              color: isFavorite ? AppColors.crimson : const Color(0xFFF5F1E8),
               size: 18,
             ),
           ),
@@ -226,11 +222,7 @@ class _ImageError extends StatelessWidget {
     return ColoredBox(
       color: palette.graphite,
       child: Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          color: palette.ash,
-          size: 28,
-        ),
+        child: Icon(Icons.broken_image_outlined, color: palette.ash, size: 28),
       ),
     );
   }

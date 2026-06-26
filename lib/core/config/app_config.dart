@@ -6,26 +6,27 @@ class AppConfig {
   static const String legacyConfigJsonKey = 'silly_smile_gun_wallpaper_4K';
 
   static const String apiBaseUrlKey = 'api_base_url';
-  static const String bannerIdKey = 'banner_id';
+  static const String nativeIdKey = 'native_id';
   static const String interstitialIdKey = 'interstitial_id';
   static const String appOpenIdKey = 'app_open_id';
   static const String rewardedIdKey = 'rewarded_id';
   static const String collapsibleBannerIdKey = 'collapsible_banner_id';
   static const String showAdsKey = 'show_ads';
+  static const String showNativeAdsKey = 'show_native_ads';
   static const String showInterstitialAdsKey = 'show_interstitial_ads';
   static const String showAppOpenAdsKey = 'show_app_open_ads';
-  static const String showBannerAdsKey = 'show_banner_ads';
   static const String showRewardedAdsKey = 'show_rewarded_ads';
-  static const String gridBannerIntervalKey = 'grid_banner_interval';
-  static const String enableAdaptiveBannerKey = 'enable_adaptive_banner';
+  static const String gridNativeIntervalKey = 'grid_native_interval';
+  static const String enableNativeAdsKey = 'enable_native_ads';
+  static const String enableGridSquareNativeKey = 'enable_grid_square_native';
   static const String enableCollapsibleBannerKey = 'enable_collapsible_banner';
   static const String collapsibleBannerPositionKey =
       'collapsible_banner_position';
-  static const String showBannerOnHomeScreenKey = 'show_banner_on_home_screen';
-  static const String showBannerInWallpaperGridKey =
-      'show_banner_in_wallpaper_grid';
-  static const String showBannerOnFavoritesScreenKey =
-      'show_banner_on_favorites_screen';
+  static const String showNativeOnHomeScreenKey = 'show_native_on_home_screen';
+  static const String showNativeInWallpaperGridKey =
+      'show_native_in_wallpaper_grid';
+  static const String showNativeOnFavoritesScreenKey =
+      'show_native_on_favorites_screen';
   static const String showInterstitialOnApplyWallpaperKey =
       'show_interstitial_on_apply_wallpaper';
   static const String showRewardedOnLiveWallpaperUnlockKey =
@@ -42,28 +43,28 @@ class AppConfig {
       'background_threshold_seconds';
   static const String persistUnlockedWallpapersKey =
       'persist_unlocked_wallpapers';
-  static const String enableGridSquareBannerKey = 'enable_grid_square_banner';
 
   final String apiBaseUrl;
 
-  final String bannerId;
+  final String nativeId;
   final String interstitialId;
   final String appOpenId;
   final String rewardedId;
   final String collapsibleBannerId;
 
   final bool showAds;
+  final bool showNativeAds;
   final bool showInterstitialAds;
   final bool showAppOpenAds;
-  final bool showBannerAds;
   final bool showRewardedAds;
-  final int gridBannerInterval;
-  final bool enableAdaptiveBanner;
+  final int gridNativeInterval;
+  final bool enableNativeAds;
+  final bool enableGridSquareNative;
   final bool enableCollapsibleBanner;
   final String collapsibleBannerPosition;
-  final bool showBannerOnHomeScreen;
-  final bool showBannerInWallpaperGrid;
-  final bool showBannerOnFavoritesScreen;
+  final bool showNativeOnHomeScreen;
+  final bool showNativeInWallpaperGrid;
+  final bool showNativeOnFavoritesScreen;
   final bool showInterstitialOnApplyWallpaper;
   final bool showRewardedOnLiveWallpaperUnlock;
   final bool showAppOpenOnColdStart;
@@ -73,27 +74,27 @@ class AppConfig {
   final bool showShareTextOnLiveWallpaper;
   final int backgroundThresholdSeconds;
   final bool persistUnlockedWallpapers;
-  final bool enableGridSquareBanner;
 
   const AppConfig({
     required this.apiBaseUrl,
-    required this.bannerId,
+    required this.nativeId,
     required this.interstitialId,
     required this.appOpenId,
     required this.rewardedId,
     required this.collapsibleBannerId,
     required this.showAds,
+    required this.showNativeAds,
     required this.showInterstitialAds,
     required this.showAppOpenAds,
-    required this.showBannerAds,
     required this.showRewardedAds,
-    required this.gridBannerInterval,
-    required this.enableAdaptiveBanner,
+    required this.gridNativeInterval,
+    required this.enableNativeAds,
+    required this.enableGridSquareNative,
     required this.enableCollapsibleBanner,
     required this.collapsibleBannerPosition,
-    required this.showBannerOnHomeScreen,
-    required this.showBannerInWallpaperGrid,
-    required this.showBannerOnFavoritesScreen,
+    required this.showNativeOnHomeScreen,
+    required this.showNativeInWallpaperGrid,
+    required this.showNativeOnFavoritesScreen,
     required this.showInterstitialOnApplyWallpaper,
     required this.showRewardedOnLiveWallpaperUnlock,
     required this.showAppOpenOnColdStart,
@@ -103,28 +104,28 @@ class AppConfig {
     required this.showShareTextOnLiveWallpaper,
     required this.backgroundThresholdSeconds,
     required this.persistUnlockedWallpapers,
-    required this.enableGridSquareBanner,
   });
 
   static const AppConfig defaults = AppConfig(
     apiBaseUrl: '',
-    bannerId: '',
+    nativeId: '',
     interstitialId: '',
     appOpenId: '',
     rewardedId: '',
     collapsibleBannerId: '',
     showAds: false,
+    showNativeAds: false,
     showInterstitialAds: false,
     showAppOpenAds: false,
-    showBannerAds: false,
     showRewardedAds: false,
-    gridBannerInterval: 10,
-    enableAdaptiveBanner: true,
+    gridNativeInterval: 10,
+    enableNativeAds: false,
+    enableGridSquareNative: true,
     enableCollapsibleBanner: true,
     collapsibleBannerPosition: 'bottom',
-    showBannerOnHomeScreen: true,
-    showBannerInWallpaperGrid: true,
-    showBannerOnFavoritesScreen: true,
+    showNativeOnHomeScreen: true,
+    showNativeInWallpaperGrid: true,
+    showNativeOnFavoritesScreen: true,
     showInterstitialOnApplyWallpaper: true,
     showRewardedOnLiveWallpaperUnlock: true,
     showAppOpenOnColdStart: true,
@@ -134,29 +135,29 @@ class AppConfig {
     showShareTextOnLiveWallpaper: true,
     backgroundThresholdSeconds: 1800,
     persistUnlockedWallpapers: false,
-    enableGridSquareBanner: false,
   );
 
   static Map<String, Object> get remoteDefaults => <String, Object>{
     legacyConfigJsonKey: '',
     apiBaseUrlKey: defaults.apiBaseUrl,
-    bannerIdKey: defaults.bannerId,
+    nativeIdKey: defaults.nativeId,
     interstitialIdKey: defaults.interstitialId,
     appOpenIdKey: defaults.appOpenId,
     rewardedIdKey: defaults.rewardedId,
     collapsibleBannerIdKey: defaults.collapsibleBannerId,
     showAdsKey: defaults.showAds,
+    showNativeAdsKey: defaults.showNativeAds,
     showInterstitialAdsKey: defaults.showInterstitialAds,
     showAppOpenAdsKey: defaults.showAppOpenAds,
-    showBannerAdsKey: defaults.showBannerAds,
     showRewardedAdsKey: defaults.showRewardedAds,
-    gridBannerIntervalKey: defaults.gridBannerInterval,
-    enableAdaptiveBannerKey: defaults.enableAdaptiveBanner,
+    gridNativeIntervalKey: defaults.gridNativeInterval,
+    enableNativeAdsKey: defaults.enableNativeAds,
+    enableGridSquareNativeKey: defaults.enableGridSquareNative,
     enableCollapsibleBannerKey: defaults.enableCollapsibleBanner,
     collapsibleBannerPositionKey: defaults.collapsibleBannerPosition,
-    showBannerOnHomeScreenKey: defaults.showBannerOnHomeScreen,
-    showBannerInWallpaperGridKey: defaults.showBannerInWallpaperGrid,
-    showBannerOnFavoritesScreenKey: defaults.showBannerOnFavoritesScreen,
+    showNativeOnHomeScreenKey: defaults.showNativeOnHomeScreen,
+    showNativeInWallpaperGridKey: defaults.showNativeInWallpaperGrid,
+    showNativeOnFavoritesScreenKey: defaults.showNativeOnFavoritesScreen,
     showInterstitialOnApplyWallpaperKey:
         defaults.showInterstitialOnApplyWallpaper,
     showRewardedOnLiveWallpaperUnlockKey:
@@ -168,7 +169,6 @@ class AppConfig {
     showShareTextOnLiveWallpaperKey: defaults.showShareTextOnLiveWallpaper,
     backgroundThresholdSecondsKey: defaults.backgroundThresholdSeconds,
     persistUnlockedWallpapersKey: defaults.persistUnlockedWallpapers,
-    enableGridSquareBannerKey: defaults.enableGridSquareBanner,
   };
 
   factory AppConfig.fromRemoteConfig(FirebaseRemoteConfig remoteConfig) {
@@ -190,10 +190,10 @@ class AppConfig {
         apiBaseUrlKey,
         _readString(legacyConfig['apiBaseUrl'], fallback.apiBaseUrl),
       ),
-      bannerId: _readRemoteString(
+      nativeId: _readRemoteString(
         remoteConfig,
-        bannerIdKey,
-        _readString(legacyAds['banner'], fallback.bannerId),
+        nativeIdKey,
+        _readString(legacyAds['native'], fallback.nativeId),
       ),
       interstitialId: _readRemoteString(
         remoteConfig,
@@ -223,6 +223,11 @@ class AppConfig {
         showAdsKey,
         _readBool(legacyFeatures['showAds'], fallback.showAds),
       ),
+      showNativeAds: _readRemoteBool(
+        remoteConfig,
+        showNativeAdsKey,
+        _readBool(legacyFeatures['showNativeAds'], fallback.showNativeAds),
+      ),
       showInterstitialAds: _readRemoteBool(
         remoteConfig,
         showInterstitialAdsKey,
@@ -236,30 +241,33 @@ class AppConfig {
         showAppOpenAdsKey,
         _readBool(legacyFeatures['showAppOpenAds'], fallback.showAppOpenAds),
       ),
-      showBannerAds: _readRemoteBool(
-        remoteConfig,
-        showBannerAdsKey,
-        _readBool(legacyFeatures['showBannerAds'], fallback.showBannerAds),
-      ),
       showRewardedAds: _readRemoteBool(
         remoteConfig,
         showRewardedAdsKey,
         _readBool(legacyFeatures['showRewardedAds'], fallback.showRewardedAds),
       ),
-      gridBannerInterval: _readRemoteInt(
+      gridNativeInterval: _readRemoteInt(
         remoteConfig,
-        gridBannerIntervalKey,
+        gridNativeIntervalKey,
         _readInt(
-          legacyAdSettings['gridBannerInterval'],
-          fallback.gridBannerInterval,
+          legacyAdSettings['gridNativeInterval'],
+          fallback.gridNativeInterval,
         ),
       ),
-      enableAdaptiveBanner: _readRemoteBool(
+      enableNativeAds: _readRemoteBool(
         remoteConfig,
-        enableAdaptiveBannerKey,
+        enableNativeAdsKey,
         _readBool(
-          legacyAdSettings['enableAdaptiveBanner'],
-          fallback.enableAdaptiveBanner,
+          legacyAdSettings['enableNativeAds'],
+          fallback.enableNativeAds,
+        ),
+      ),
+      enableGridSquareNative: _readRemoteBool(
+        remoteConfig,
+        enableGridSquareNativeKey,
+        _readBool(
+          legacyAdSettings['enableGridSquareNative'],
+          fallback.enableGridSquareNative,
         ),
       ),
       enableCollapsibleBanner: _readRemoteBool(
@@ -278,28 +286,28 @@ class AppConfig {
           fallback.collapsibleBannerPosition,
         ),
       ),
-      showBannerOnHomeScreen: _readRemoteBool(
+      showNativeOnHomeScreen: _readRemoteBool(
         remoteConfig,
-        showBannerOnHomeScreenKey,
+        showNativeOnHomeScreenKey,
         _readBool(
-          legacyAdSettings['showBannerOnHomeScreen'],
-          fallback.showBannerOnHomeScreen,
+          legacyAdSettings['showNativeOnHomeScreen'],
+          fallback.showNativeOnHomeScreen,
         ),
       ),
-      showBannerInWallpaperGrid: _readRemoteBool(
+      showNativeInWallpaperGrid: _readRemoteBool(
         remoteConfig,
-        showBannerInWallpaperGridKey,
+        showNativeInWallpaperGridKey,
         _readBool(
-          legacyAdSettings['showBannerInWallpaperGrid'],
-          fallback.showBannerInWallpaperGrid,
+          legacyAdSettings['showNativeInWallpaperGrid'],
+          fallback.showNativeInWallpaperGrid,
         ),
       ),
-      showBannerOnFavoritesScreen: _readRemoteBool(
+      showNativeOnFavoritesScreen: _readRemoteBool(
         remoteConfig,
-        showBannerOnFavoritesScreenKey,
+        showNativeOnFavoritesScreenKey,
         _readBool(
-          legacyAdSettings['showBannerOnFavoritesScreen'],
-          fallback.showBannerOnFavoritesScreen,
+          legacyAdSettings['showNativeOnFavoritesScreen'],
+          fallback.showNativeOnFavoritesScreen,
         ),
       ),
       showInterstitialOnApplyWallpaper: _readRemoteBool(
@@ -372,14 +380,6 @@ class AppConfig {
         _readBool(
           legacyAdSettings['persistUnlockedWallpapers'],
           fallback.persistUnlockedWallpapers,
-        ),
-      ),
-      enableGridSquareBanner: _readRemoteBool(
-        remoteConfig,
-        enableGridSquareBannerKey,
-        _readBool(
-          legacyAdSettings['enableGridSquareBanner'],
-          fallback.enableGridSquareBanner,
         ),
       ),
     );

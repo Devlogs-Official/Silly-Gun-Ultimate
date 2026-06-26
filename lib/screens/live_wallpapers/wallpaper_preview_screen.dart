@@ -327,99 +327,99 @@ class _PreviewCard extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 280),
-                      layoutBuilder: (currentChild, previousChildren) {
-                        return Stack(
-                          fit: StackFit.expand,
-                          alignment: Alignment.center,
-                          children: <Widget>[
-                            ...previousChildren,
-                            ?currentChild,
-                          ],
-                        );
-                      },
-                      child: ready
-                          ? SizedBox.expand(
-                              key: const ValueKey('video'),
-                              child: FittedBox(
-                                clipBehavior: Clip.hardEdge,
-                                fit: BoxFit.cover,
-                                child: SizedBox(
-                                  width: controller!.value.size.width,
-                                  height: controller!.value.size.height,
-                                  child: VideoPlayer(controller!),
-                                ),
-                              ),
-                            )
-                          : SizedBox.expand(
-                              key: const ValueKey('thumb'),
-                              child: CachedNetworkImage(
-                                imageUrl: wallpaper.thumbnailUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (_, _) => const VideoLoader(),
-                                errorWidget: (_, _, _) => ColoredBox(
-                                  color: palette.graphite,
-                                  child: Icon(
-                                    Icons.broken_image_outlined,
-                                    color: palette.ash,
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 280),
+                          layoutBuilder: (currentChild, previousChildren) {
+                            return Stack(
+                              fit: StackFit.expand,
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                ...previousChildren,
+                                ?currentChild,
+                              ],
+                            );
+                          },
+                          child: ready
+                              ? SizedBox.expand(
+                                  key: const ValueKey('video'),
+                                  child: FittedBox(
+                                    clipBehavior: Clip.hardEdge,
+                                    fit: BoxFit.cover,
+                                    child: SizedBox(
+                                      width: controller!.value.size.width,
+                                      height: controller!.value.size.height,
+                                      child: VideoPlayer(controller!),
+                                    ),
+                                  ),
+                                )
+                              : SizedBox.expand(
+                                  key: const ValueKey('thumb'),
+                                  child: CachedNetworkImage(
+                                    imageUrl: wallpaper.thumbnailUrl,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, _) => const VideoLoader(),
+                                    errorWidget: (_, _, _) => ColoredBox(
+                                      color: palette.graphite,
+                                      child: Icon(
+                                        Icons.broken_image_outlined,
+                                        color: palette.ash,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                    ),
-                    // Crimson corner accent
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: Container(
-                        width: 32,
-                        height: 4,
-                        color: AppColors.crimson,
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      child: Container(
-                        width: 4,
-                        height: 32,
-                        color: AppColors.crimson,
-                      ),
-                    ),
-                    if (hasError)
-                      Positioned.fill(
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.62),
-                          padding: const EdgeInsets.all(22),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.play_disabled_rounded,
-                                color: Colors.white,
-                                size: 44,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                errorMessage!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.3,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              FilledButton.icon(
-                                onPressed: onRetry,
-                                icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Retry'),
-                              ),
-                            ],
+                        ),
+                        // Crimson corner accent
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                            width: 32,
+                            height: 4,
+                            color: AppColors.crimson,
                           ),
                         ),
-                      ),
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                            width: 4,
+                            height: 32,
+                            color: AppColors.crimson,
+                          ),
+                        ),
+                        if (hasError)
+                          Positioned.fill(
+                            child: Container(
+                              color: Colors.black.withValues(alpha: 0.62),
+                              padding: const EdgeInsets.all(22),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.play_disabled_rounded,
+                                    color: Colors.white,
+                                    size: 44,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    errorMessage!,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  FilledButton.icon(
+                                    onPressed: onRetry,
+                                    icon: const Icon(Icons.refresh_rounded),
+                                    label: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -459,15 +459,19 @@ class _PreviewCard extends StatelessWidget {
                             color: Color(0xFFF5F1E8),
                             size: 18,
                           ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'FULLSCREEN PREVIEW',
-                            style: AppText.button(
-                              size: 12.5,
-                              color: const Color(0xFFF5F1E8),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'FULLSCREEN PREVIEW',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.button(
+                                size: 12,
+                                color: const Color(0xFFF5F1E8),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           const Icon(
                             Icons.arrow_forward_rounded,
                             color: Color(0xFFF5F1E8),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../core/ad_ids.dart';
+import '../core/ads/consent_manager.dart';
 import '../core/config/app_config.dart';
 import '../core/config/config_manager.dart';
 import 'ad_event_logger.dart';
@@ -66,7 +67,7 @@ class AppOpenManager {
     if (timeInBackground < threshold) {
       debugPrint(
         'AppOpenManager: app-open skipped, background time '
-            '${timeInBackground.inMilliseconds}ms < ${threshold.inMilliseconds}ms.',
+        '${timeInBackground.inMilliseconds}ms < ${threshold.inMilliseconds}ms.',
       );
       return false;
     }
@@ -154,7 +155,7 @@ class AppOpenManager {
     _appOpenAd = null;
     _loadedAt = null;
     final Completer<AppOpenAdShowResult> showCompleter =
-    Completer<AppOpenAdShowResult>();
+        Completer<AppOpenAdShowResult>();
 
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (Ad ad) {
@@ -209,8 +210,9 @@ class AppOpenManager {
 
   bool get _canRequestAppOpen =>
       ConfigManager.config.showAds &&
-          ConfigManager.config.showAppOpenAds &&
-          AdIds.appOpenId.isNotEmpty;
+      ConsentManager.canRequestAdsNow &&
+      ConfigManager.config.showAppOpenAds &&
+      AdIds.appOpenId.isNotEmpty;
 
   bool get _hasFreshAd {
     final DateTime? loadedAt = _loadedAt;

@@ -239,15 +239,19 @@ class _PreviewCard extends StatelessWidget {
                             color: Color(0xFFF5F1E8),
                             size: 18,
                           ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'FULLSCREEN PREVIEW',
-                            style: AppText.button(
-                              size: 12.5,
-                              color: const Color(0xFFF5F1E8),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              'FULLSCREEN PREVIEW',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.button(
+                                size: 12,
+                                color: const Color(0xFFF5F1E8),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 8),
                           const Icon(
                             Icons.arrow_forward_rounded,
                             color: Color(0xFFF5F1E8),

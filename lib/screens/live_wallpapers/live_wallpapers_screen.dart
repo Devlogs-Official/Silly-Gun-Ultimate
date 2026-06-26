@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 import 'package:silly_gun_ultimate/screens/live_wallpapers/wallpaper_preview_screen.dart';
 
+import '../../core/config/config_manager.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/wallpaper_provider.dart';
 import '../../services/connectivity_service.dart';
@@ -15,6 +15,7 @@ import '../../widgets/retry_widget.dart';
 import '../../widgets/section_label.dart';
 import '../../widgets/shimmer_grid.dart';
 import '../../widgets/wallpaper_grid_item.dart';
+import '../../widgets/wallpaper_grid_with_native_ads.dart';
 
 class LiveWallpapersScreen extends StatefulWidget {
   const LiveWallpapersScreen({super.key});
@@ -150,20 +151,15 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 130),
                     sliver: SliverToBoxAdapter(
-                      child: MasonryGridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 14,
-                        crossAxisSpacing: 14,
-                        itemCount:
-                            provider.wallpapers.length +
-                            (provider.isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= provider.wallpapers.length) {
-                            return const _BottomLoader();
-                          }
-                          final wallpaper = provider.wallpapers[index];
+                      child: WallpaperGridWithNativeAds(
+                        wallpapers: provider.wallpapers,
+                        showNativeAds: _showGridNativeAds,
+                        nativeInterval: ConfigManager.config.gridNativeInterval,
+                        nativePlacement: 'live_grid',
+                        footer: provider.isLoadingMore
+                            ? const _BottomLoader()
+                            : null,
+                        itemBuilder: (context, wallpaper, index) {
                           return WallpaperGridItem(
                             key: ValueKey(wallpaper.id),
                             wallpaper: wallpaper,
@@ -194,6 +190,15 @@ class _LiveWallpapersScreenState extends State<LiveWallpapersScreen> {
         ),
       ),
     );
+  }
+
+  bool get _showGridNativeAds {
+    final config = ConfigManager.config;
+    return config.showAds &&
+        config.showNativeAds &&
+        config.enableNativeAds &&
+        config.showNativeInWallpaperGrid &&
+        config.gridNativeInterval > 0;
   }
 }
 

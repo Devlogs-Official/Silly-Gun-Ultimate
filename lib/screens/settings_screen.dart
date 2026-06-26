@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../core/app_constants.dart';
 import '../core/app_logger.dart';
-import '../core/config/config_manager.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/wallpaper_provider.dart';
-import '../services/ads_service.dart';
 import '../services/settings_service.dart';
 import '../widgets/app_colors.dart';
 import '../widgets/app_palette.dart';
@@ -66,10 +64,6 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar:
-          ConfigManager.config.showAds && ConfigManager.config.showBannerAds
-          ? const BannerAdWidget(collapsible: false)
-          : null,
     );
   }
 }
@@ -518,7 +512,7 @@ class _AboutCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'VERSION ${AppConstants.appVersion} · BUILD 02',
+                        'VERSION ${AppConstants.appVersion} · BUILD 03',
                         style: AppText.mono(color: palette.ash, size: 10.5),
                       ),
                     ],
